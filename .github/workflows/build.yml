@@ -44,7 +44,7 @@ jobs:
           cat android/key.properties
 
       - name: Get Packages
-        run: flutter pub get --enforce-lockfile
+        run: flutter pub get
 
       - name: Patch Isar Android plugin
         run: |
