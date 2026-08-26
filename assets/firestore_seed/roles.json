@@ -1,0 +1,20 @@
+{
+  "roles": [
+    {
+      "id": "super_admin",
+      "name": "Super Admin"
+    },
+    {
+      "id": "admin",
+      "name": "Admin"
+    },
+    {
+      "id": "viewer",
+      "name": "Viewer"
+    },
+    {
+      "id": "guest",
+      "name": "Guest"
+    }
+  ]
+}

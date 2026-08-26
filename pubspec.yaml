@@ -1,0 +1,71 @@
+name: zionsongs
+
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.12.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # Firebase
+  firebase_core: ^4.11.0
+  firebase_auth: ^6.5.4
+  google_sign_in: ^7.1.1
+  cloud_firestore: ^6.6.0
+
+  # Database & Storage
+  isar: 3.1.0+1
+  isar_flutter_libs: 3.1.0+1
+  path_provider: ^2.1.3
+  shared_preferences: ^2.2.3
+
+  # Utils
+  connectivity_plus: ^7.2.0
+  uuid: ^4.4.2
+  provider: ^6.1.2
+
+  pdf: any
+  printing: any
+  share_plus: ^11.0.0
+  file_picker: ^11.0.3
+  speech_to_text: ^7.0.0
+  permission_handler: ^12.0.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.13
+  isar_generator: 3.1.0+1
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/psr_styles.json
+    - assets/psr_beats.json
+    - assets/firestore_seed/
+    - assets/NotoSansDevanagari-Regular.ttf
+    - assets/NotoSans-Regular.ttf
+    - assets/NotoSansDevanagari-SemiBold.ttf
+    - assets/NotoSansMalayalam-Regular.ttf
+    - assets/Poppins-SemiBold.ttf
+    - assets/RobotoMono-Bold.ttf
+
+  fonts:
+    - family: NotoSans
+      fonts:
+        - asset: assets/NotoSans-Regular.ttf
+    - family: NotoSansDevanagari
+      fonts:
+        - asset: assets/NotoSansDevanagari-Regular.ttf
+        - asset: assets/NotoSansDevanagari-SemiBold.ttf
+          weight: 600

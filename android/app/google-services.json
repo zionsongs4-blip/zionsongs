@@ -1,0 +1,106 @@
+{
+  "project_info": {
+    "project_number": "1018034880390",
+    "project_id": "zion-songs-f03ad",
+    "storage_bucket": "zion-songs-f03ad.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1018034880390:android:8aed65b16fa76a8ee23607",
+        "android_client_info": {
+          "package_name": "com.example.zionsongs"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1018034880390-cqhjaolhkk5hstk248b8ecr9h1m077dd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.zionsongs",
+            "certificate_hash": "d89a780221e3ccd35f2e609a6db0ac746f9117b1"
+          }
+        },
+        {
+          "client_id": "1018034880390-qhk5q09frkukc3lq9k97d6h2ck8sh3ba.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.zionsongs",
+            "certificate_hash": "59087853b46a0198b4c5136897c5c0494fb79e06"
+          }
+        },
+        {
+          "client_id": "1018034880390-h1vfbtg6nfjbmtne611m4cfr1ffum3se.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMcOnPFOfwdxJuCr-fRM-SnUiNQO_G03A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1018034880390-h1vfbtg6nfjbmtne611m4cfr1ffum3se.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1018034880390-2bm12skpdise3s4uure19bhca5sihon4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.zionsongsfinal"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1018034880390:android:7281336fb7d028afe23607",
+        "android_client_info": {
+          "package_name": "com.zion.songs"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1018034880390-di0imbk3apjant448u4gntvvcenkmegp.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.zion.songs",
+            "certificate_hash": "5f7debe9ada7c1a823f127972231850780a2b3c5"
+          }
+        },
+        {
+          "client_id": "1018034880390-h1vfbtg6nfjbmtne611m4cfr1ffum3se.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMcOnPFOfwdxJuCr-fRM-SnUiNQO_G03A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1018034880390-h1vfbtg6nfjbmtne611m4cfr1ffum3se.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "1018034880390-2bm12skpdise3s4uure19bhca5sihon4.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.zionsongsfinal"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

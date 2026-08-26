@@ -1,0 +1,113 @@
+{
+  "hierarchy": [
+    {
+      "id": "ALL_ZONES",
+      "name": "All Zones",
+      "parent": null,
+      "type": "all"
+    },
+
+    {
+      "id": "NORTH_INDIA",
+      "name": "North India Zone",
+      "parent": "ALL_ZONES",
+      "type": "region"
+    },
+    {
+      "id": "DELHI",
+      "name": "Delhi Zone",
+      "parent": "ALL_ZONES",
+      "type": "region"
+    },
+    {
+      "id": "GOA",
+      "name": "Goa Zone",
+      "parent": "ALL_ZONES",
+      "type": "region"
+    },
+    {
+      "id": "KERALA",
+      "name": "Kerala Zone",
+      "parent": "ALL_ZONES",
+      "type": "region"
+    },
+    {
+      "id": "CENTRAL_INDIA",
+      "name": "Central India Zone",
+      "parent": "ALL_ZONES",
+      "type": "region"
+    },
+    {
+      "id": "GUJRAT_ZONE",
+      "name": "Gujrat Zone",
+      "parent": "CENTRAL_INDIA",
+      "type": "zone"
+    },
+    {
+      "id": "INDORE_ZONE",
+      "name": "Indore Zone",
+      "parent": "CENTRAL_INDIA",
+      "type": "zone"
+    },
+    {
+      "id": "MUMBAI",
+      "name": "Mumbai Zone",
+      "parent": "CENTRAL_INDIA",
+      "type": "zone"
+    },
+    {
+      "id": "MUM_THANE_ZONE",
+      "name": "Mum Thane Zone",
+      "parent": "MUMBAI",
+      "type": "localzone"
+    },
+    {
+      "id": "MUM_WESTERN_ZONE",
+      "name": "Mum Western Zone",
+      "parent": "MUMBAI",
+      "type": "localzone"
+    },
+    {
+      "id": "MUM_CENTRAL_ZONE",
+      "name": "Mum Central Zone",
+      "parent": "MUMBAI",
+      "type": "localzone"
+    },
+    {
+      "id": "THANE_EVG",
+      "name": "Thane EVG Zone",
+      "parent": "MUM_THANE_ZONE",
+      "type": "evg"
+    },
+    {
+      "id": "ANDHERI_EVG",
+      "name": "Andheri EVG Zone",
+      "parent": "MUM_THANE_ZONE",
+      "type": "evg"
+    },
+    {
+      "id": "SANTACRUZ_EVG",
+      "name": "Santacruz EVG Zone",
+      "parent": "MUM_WESTERN_ZONE",
+      "type": "evg"
+    },
+    {
+      "id": "GOREGAON_EVG",
+      "name": "Goregaon EVG Zone",
+      "parent": "MUM_WESTERN_ZONE",
+      "type": "evg"
+    },
+    {
+      "id": "MALAD_EVG",
+      "name": "Malad EVG Zone",
+      "parent": "MUM_CENTRAL_ZONE",
+      "type": "evg"
+    },
+    {
+      "id": "VASAI_EVG",
+      "name": "Vasai EVG Zone",
+      "parent": "MUM_CENTRAL_ZONE",
+      "type": "evg"
+    }
+  ]
+}

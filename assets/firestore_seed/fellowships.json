@@ -1,0 +1,100 @@
+{
+  "fellowships": [
+
+    {
+      "id": "THANE_FELLOWSHIP",
+      "name": "Thane Fellowship",
+      "currentEVG": "THANE_EVG",
+      "active": true
+    },
+    {
+      "id": "KALYAN_FELLOWSHIP",
+      "name": "Kalyan Fellowship",
+      "currentEVG": "THANE_EVG",
+      "active": true
+    },
+
+    {
+      "id": "ANDHERI_EAST_FELLOWSHIP",
+      "name": "Andheri East Fellowship",
+      "currentEVG": "ANDHERI_EVG",
+      "active": true
+    },
+    {
+      "id": "KURLA_FELLOWSHIP",
+      "name": "Kurla Fellowship",
+      "currentEVG": "ANDHERI_EVG",
+      "active": true
+    },
+
+    {
+      "id": "VILLE_PARLE_FELLOWSHIP",
+      "name": "Ville Parle Fellowship",
+      "currentEVG": "SANTACRUZ_EVG",
+      "active": true
+    },
+    {
+      "id": "SANTACRUZ_FELLOWSHIP",
+      "name": "Santacruz Fellowship",
+      "currentEVG": "SANTACRUZ_EVG",
+      "active": true
+    },
+
+    {
+      "id": "GOREGAON_FELLOWSHIP",
+      "name": "Goregaon Fellowship",
+      "currentEVG": "GOREGAON_EVG",
+      "active": true
+    },
+
+    {
+      "id": "MALAD_FELLOWSHIP",
+      "name": "Malad Fellowship",
+      "currentEVG": "MALAD_EVG",
+      "active": true
+    },
+    {
+      "id": "MALVANI_FELLOWSHIP",
+      "name": "Malvani Fellowship",
+      "currentEVG": "MALAD_EVG",
+      "active": true
+    },
+    {
+      "id": "JANKALYAN_FELLOWSHIP",
+      "name": "Jankalyan Fellowship",
+      "currentEVG": "MALAD_EVG",
+      "active": true
+    },
+    {
+      "id": "BORIVALI_FELLOWSHIP",
+      "name": "Borivali Fellowship",
+      "currentEVG": "MALAD_EVG",
+      "active": true
+    },
+
+    {
+      "id": "MIRA_ROAD_FELLOWSHIP",
+      "name": "Mira Road Fellowship",
+      "currentEVG": "VASAI_EVG",
+      "active": true
+    },
+    {
+      "id": "UTTAN_FELLOWSHIP",
+      "name": "Uttan Fellowship",
+      "currentEVG": "VASAI_EVG",
+      "active": true
+    },
+    {
+      "id": "VASAI_FELLOWSHIP",
+      "name": "Vasai Fellowship",
+      "currentEVG": "VASAI_EVG",
+      "active": true
+    },
+    {
+      "id": "NALASOPARA_FELLOWSHIP",
+      "name": "Nalasopara Fellowship",
+      "currentEVG": "VASAI_EVG",
+      "active": true
+    }
+  ]
+}

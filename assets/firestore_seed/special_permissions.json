@@ -1,0 +1,32 @@
+{
+  "specialPermissions": [
+    {
+      "id": "editHymns",
+      "name": "Edit Hymns"
+    },
+    {
+      "id": "deleteHymns",
+      "name": "Delete Hymns"
+    },
+    {
+      "id": "deleteFolders",
+      "name": "Delete Folders"
+    },
+    {
+      "id": "approveViewLists",
+      "name": "Approve View Lists"
+    },
+    {
+      "id": "approveMedleys",
+      "name": "Approve Medleys"
+    },
+    {
+      "id": "approveHymnEdits",
+      "name": "Approve Hymn Edits"
+    },
+    {
+      "id": "manageFellowships",
+      "name": "Manage Fellowships"
+    }
+  ]
+}

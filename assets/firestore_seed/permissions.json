@@ -1,0 +1,35 @@
+{
+  "permissions": {
+    "super_admin": {
+      "manageUsers": true,
+      "manageRoles": true,
+      "manageHierarchy": true,
+      "manageDevices": true,
+      "editSharedContent": true
+    },
+
+    "admin": {
+      "manageUsers": false,
+      "manageRoles": false,
+      "manageHierarchy": false,
+      "manageDevices": false,
+      "editSharedContent": true
+    },
+
+    "viewer": {
+      "manageUsers": false,
+      "manageRoles": false,
+      "manageHierarchy": false,
+      "manageDevices": false,
+      "editSharedContent": false
+    },
+
+    "guest": {
+      "manageUsers": false,
+      "manageRoles": false,
+      "manageHierarchy": false,
+      "manageDevices": false,
+      "editSharedContent": false
+    }
+  }
+}

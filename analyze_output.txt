@@ -1,0 +1,303 @@
+Analyzing zionsongs...                                          
+
+warning • Unused import: 'auth_repository.dart'. Try removing the import directive • lib/feature/access_control/auth_repository.dart:4:8 • unused_import
+   info • Type could be non-nullable. Try changing the type to be non-nullable • lib/feature/access_control/google_sign_in_service.dart:14:32 • unnecessary_nullable_for_final_variable_declarations
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/feature/access_control/login_screen.dart:48:3 • use_build_context_synchronously
+   info • Unnecessary use of multiple underscores. Try using '_' • lib/feature/home/app_bar/home_app_bar.dart:130:31 • unnecessary_underscores
+warning • Unused import: '../../../screens/medleys_screen.dart'. Try removing the import directive • lib/feature/home/app_bar/home_app_bar_logic.dart:5:8 • unused_import
+warning • Unused import: '../../../screens/viewlist_screen.dart'. Try removing the import directive • lib/feature/home/app_bar/home_app_bar_logic.dart:6:8 • unused_import
+warning • The declaration '_placeholder' isn't referenced. Try removing the declaration of '_placeholder' • lib/feature/home/app_bar/home_app_bar_logic.dart:41:8 • unused_element
+warning • The name HomeFilter is shown, but isn't used. Try removing the name from the list of shown members • lib/feature/home/app_bar/home_repository_impl.dart:12:46 • unused_shown_name
+warning • The value of the field '_pdfService' isn't used. Try removing the field, or using it • lib/feature/home/app_bar/home_repository_impl.dart:55:26 • unused_field
+  error • The class '_HomePageState' doesn't have an unnamed constructor. Try using one of the named constructors defined in '_HomePageState' • lib/feature/home/home_page/home_page.dart:27:36 • new_with_undefined_constructor_default
+  error • Missing concrete implementation of 'State.build'. Try implementing the missing method, or make the class abstract • lib/feature/home/home_page/home_page.dart:30:7 • non_abstract_class_inherits_abstract_member
+warning • The value of the field '_favoritesRepository' isn't used. Try removing the field, or using it • lib/feature/home/home_page/home_page.dart:36:34 • unused_field
+   info • The private field _currentTab could be 'final'. Try making the field 'final' • lib/feature/home/home_page/home_page.dart:50:18 • prefer_final_fields
+   info • The private field _filter could be 'final'. Try making the field 'final' • lib/feature/home/home_page/home_page.dart:51:14 • prefer_final_fields
+  error • The method '_loadHymns' isn't defined for the type '_HomePageState'. Try correcting the name to the name of an existing method, or defining a method named '_loadHymns' • lib/feature/home/home_page/home_page.dart:68:19 • undefined_method
+   info • An uninitialized field should have an explicit type annotation. Try adding a type annotation • lib/feature/home/home_page/home_page.dart:72:15 • prefer_typing_uninitialized_variables
+   info • Missing type annotation. Try adding a type annotation • lib/feature/home/home_page/home_page.dart:72:15 • strict_top_level_inference
+warning • The field doesn't override an inherited getter or setter. Try updating this class to match the superclass, or removing the override annotation • lib/feature/home/home_page/home_page.dart:72:15 • override_on_non_overriding_member
+  error • Expected to find ';' • lib/feature/home/home_page/home_page.dart:72:15 • expected_token
+  error • Variables must be declared using the keywords 'const', 'final', 'var' or a type name. Try adding the name of the type of the variable or the keyword 'var' • lib/feature/home/home_page/home_page.dart:72:15 • missing_const_final_var_or_type
+  error • Expected a class member. Try placing this code inside a class member • lib/feature/home/home_page/home_page.dart:72:21 • expected_class_member
+  error • Expected a class member. Try placing this code inside a class member • lib/feature/home/home_page/home_page.dart:72:23 • expected_class_member
+  error • Expected a class member. Try placing this code inside a class member • lib/feature/home/home_page/home_page.dart:72:26 • expected_class_member
+   info • An uninitialized field should have an explicit type annotation. Try adding a type annotation • lib/feature/home/home_page/home_page.dart:73:15 • prefer_typing_uninitialized_variables
+   info • Missing type annotation. Try adding a type annotation • lib/feature/home/home_page/home_page.dart:73:15 • strict_top_level_inference
+  error • Expected to find ';' • lib/feature/home/home_page/home_page.dart:73:15 • expected_token
+  error • Variables must be declared using the keywords 'const', 'final', 'var' or a type name. Try adding the name of the type of the variable or the keyword 'var' • lib/feature/home/home_page/home_page.dart:73:15 • missing_const_final_var_or_type
+  error • Expected a class member. Try placing this code inside a class member • lib/feature/home/home_page/home_page.dart:73:20 • expected_class_member
+   info • Missing type annotation. Try adding a type annotation • lib/feature/home/home_page/home_page.dart:73:22 • strict_top_level_inference
+   info • The variable name 'Padding' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/feature/home/home_page/home_page.dart:73:22 • non_constant_identifier_names
+   info • Missing type annotation. Try adding a type annotation • lib/feature/home/home_page/home_page.dart:74:17 • strict_top_level_inference
+  error • Named parameters must be enclosed in curly braces ('{' and '}'). Try surrounding the named parameters in curly braces • lib/feature/home/home_page/home_page.dart:74:24 • named_parameter_outside_group
+  error • Using a colon as the separator before a default value is no longer supported. Try replacing the colon with an equal sign • lib/feature/home/home_page/home_page.dart:74:24 • obsolete_colon_for_default_value
+   info • Missing type annotation. Try adding a type annotation • lib/feature/home/home_page/home_page.dart:75:17 • strict_top_level_inference
+  error • Named parameters must be enclosed in curly braces ('{' and '}'). Try surrounding the named parameters in curly braces • lib/feature/home/home_page/home_page.dart:75:22 • named_parameter_outside_group
+  error • Using a colon as the separator before a default value is no longer supported. Try replacing the colon with an equal sign • lib/feature/home/home_page/home_page.dart:75:22 • obsolete_colon_for_default_value
+  error • The default value of an optional parameter must be constant • lib/feature/home/home_page/home_page.dart:75:24 • non_constant_default_value
+  error • Undefined name 'minController'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:76:37 • undefined_identifier
+  error • Undefined name 'maxController'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:77:37 • undefined_identifier
+  error • The instance member 'mounted' can't be accessed in an initializer. Try replacing the reference to the instance member with a different expression • lib/feature/home/home_page/home_page.dart:81:26 • implicit_this_reference_in_initializer
+  error • The instance member '_filter' can't be accessed in an initializer. Try replacing the reference to the instance member with a different expression • lib/feature/home/home_page/home_page.dart:83:21 • implicit_this_reference_in_initializer
+  error • The instance member '_filter' can't be accessed in an initializer. Try replacing the reference to the instance member with a different expression • lib/feature/home/home_page/home_page.dart:83:31 • implicit_this_reference_in_initializer
+  error • Undefined name 'selected'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:83:82 • undefined_identifier
+  error • The instance member '_hymnFuture' can't be accessed in an initializer. Try replacing the reference to the instance member with a different expression • lib/feature/home/home_page/home_page.dart:84:21 • implicit_this_reference_in_initializer
+  error • The method '_loadHymns' isn't defined for the type '_HomePageState'. Try correcting the name to the name of an existing method, or defining a method named '_loadHymns' • lib/feature/home/home_page/home_page.dart:84:35 • undefined_method
+  error • Undefined name 'minController'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:94:43 • undefined_identifier
+  error • Undefined name 'selected'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:112:37 • undefined_identifier
+  error • Undefined name 'presetRanges'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:112:66 • undefined_identifier
+  error • Undefined name 'selected'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:113:37 • undefined_identifier
+  error • The name 'Padding' isn't a class. Try correcting the name to match an existing class • lib/feature/home/home_page/home_page.dart:120:33 • creation_with_non_type
+  error • Undefined name 'maxController'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:126:43 • undefined_identifier
+  error • Undefined name 'selected'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:144:37 • undefined_identifier
+  error • Undefined name 'presetRanges'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:144:66 • undefined_identifier
+  error • Undefined name 'selected'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:145:37 • undefined_identifier
+  error • Undefined name 'ranges'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:158:40 • undefined_identifier
+  error • Undefined name 'ranges'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:160:45 • undefined_identifier
+  error • Undefined name 'selected'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:161:47 • undefined_identifier
+  error • Undefined name 'selected'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:175:39 • undefined_identifier
+  error • Undefined name 'selected'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:177:39 • undefined_identifier
+  error • Undefined name 'selected'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:193:33 • undefined_identifier
+  error • The instance member '_filter' can't be accessed in an initializer. Try replacing the reference to the instance member with a different expression • lib/feature/home/home_page/home_page.dart:196:31 • implicit_this_reference_in_initializer
+  error • The instance member '_filter' can't be accessed in an initializer. Try replacing the reference to the instance member with a different expression • lib/feature/home/home_page/home_page.dart:196:41 • implicit_this_reference_in_initializer
+  error • The instance member '_hymnFuture' can't be accessed in an initializer. Try replacing the reference to the instance member with a different expression • lib/feature/home/home_page/home_page.dart:197:31 • implicit_this_reference_in_initializer
+  error • The method '_loadHymns' isn't defined for the type '_HomePageState'. Try correcting the name to the name of an existing method, or defining a method named '_loadHymns' • lib/feature/home/home_page/home_page.dart:197:45 • undefined_method
+  error • A function body must be provided. Try adding a function body • lib/feature/home/home_page/home_page.dart:206:16 • missing_function_body
+  error • Expected a class member. Try placing this code inside a class member • lib/feature/home/home_page/home_page.dart:206:16 • expected_class_member
+  error • Expected a class member. Try placing this code inside a class member • lib/feature/home/home_page/home_page.dart:207:13 • expected_class_member
+  error • Expected a class member. Try placing this code inside a class member • lib/feature/home/home_page/home_page.dart:207:14 • expected_class_member
+  error • The name '_filter' is already defined. Try renaming one of the declarations • lib/feature/home/home_page/home_page.dart:208:5 • duplicate_definition
+  error • Variables must be declared using the keywords 'const', 'final', 'var' or a type name. Try adding the name of the type of the variable or the keyword 'var' • lib/feature/home/home_page/home_page.dart:208:5 • missing_const_final_var_or_type
+  error • The name of a constructor must match the name of the enclosing class • lib/feature/home/home_page/home_page.dart:209:5 • invalid_constructor_name
+  error • Expected a method, getter, setter or operator declaration. This appears to be incomplete code. Try removing it or completing it • lib/feature/home/home_page/home_page.dart:210:4 • expected_executable
+  error • Unexpected text ';'. Try removing the text • lib/feature/home/home_page/home_page.dart:210:5 • unexpected_token
+   info • Missing type annotation. Try adding a type annotation • lib/feature/home/home_page/home_page.dart:212:3 • strict_top_level_inference
+  error • 'if' can't be used as an identifier because it's a keyword. Try renaming this to be an identifier that isn't a keyword • lib/feature/home/home_page/home_page.dart:212:3 • expected_identifier_but_got_keyword
+   info • Missing type annotation. Try adding a type annotation • lib/feature/home/home_page/home_page.dart:212:7 • strict_top_level_inference
+  error • Expected to find ')' • lib/feature/home/home_page/home_page.dart:212:11 • expected_token
+  error • Undefined name '_hymnFuture'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:214:5 • undefined_identifier
+  error • The function '_loadHymns' isn't defined. Try importing the library that defines '_loadHymns', correcting the name to the name of an existing function, or defining a function named '_loadHymns' • lib/feature/home/home_page/home_page.dart:214:19 • undefined_function
+  error • Expected a method, getter, setter or operator declaration. This appears to be incomplete code. Try removing it or completing it • lib/feature/home/home_page/home_page.dart:216:1 • expected_executable
+  error • Undefined name '_hymnFuture'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:219:25 • undefined_identifier
+  error • Undefined name '_scrollController'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:232:9 • undefined_identifier
+  error • Undefined name '_itemHeight'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:233:30 • undefined_identifier
+  error • Undefined name '_scrollController'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:234:7 • undefined_identifier
+  error • Undefined name '_currentTab'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:243:62 • undefined_identifier
+  error • Undefined name '_currentTab'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:245:9 • undefined_identifier
+  error • Undefined name '_currentTab'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:254:9 • undefined_identifier
+  error • Undefined name '_currentTab'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:263:9 • undefined_identifier
+  error • Undefined name '_hymnFuture'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:270:15 • undefined_identifier
+  error • Undefined name '_currentTab'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:286:30 • undefined_identifier
+  error • Undefined name '_selectionController'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:295:38 • undefined_identifier
+  error • Undefined name '_scrollController'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:296:35 • undefined_identifier
+  error • Undefined name '_toggleFavorite'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:315:35 • undefined_identifier
+warning • The declaration '_showExcelDropdown' isn't referenced. Try removing the declaration of '_showExcelDropdown' • lib/feature/home/home_page/home_page.dart:330:14 • unused_element
+  error • Undefined name 'context'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:339:30 • undefined_identifier
+warning • The operand can't be 'null', so the condition is always 'false'. Try removing the condition, an enclosing condition, or the whole conditional statement • lib/feature/home/home_page/home_page.dart:340:15 • unnecessary_null_comparison
+warning • Dead code. Try removing the code, or fixing the code before it so that it can be reached • lib/feature/home/home_page/home_page.dart:340:24 • dead_code
+  error • Undefined name '_repository'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:452:24 • undefined_identifier
+  error • Undefined name 'context'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:453:30 • undefined_identifier
+warning • The operand can't be 'null', so the condition is always 'false'. Try removing the condition, an enclosing condition, or the whole conditional statement • lib/feature/home/home_page/home_page.dart:454:15 • unnecessary_null_comparison
+warning • Dead code. Try removing the code, or fixing the code before it so that it can be reached • lib/feature/home/home_page/home_page.dart:454:24 • dead_code
+  error • Undefined name '_filter'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:456:41 • undefined_identifier
+  error • Undefined name '_tempoButtonKey'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:476:17 • undefined_identifier
+  error • Undefined name '_tempoLink'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:499:17 • undefined_identifier
+  error • Undefined name 'mounted'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:538:36 • undefined_identifier
+  error • Invalid reference to 'this' expression • lib/feature/home/home_page/home_page.dart:543:31 • invalid_reference_to_this
+  error • Undefined name '_filter'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:544:33 • undefined_identifier
+  error • Undefined name '_filter'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:544:43 • undefined_identifier
+  error • Undefined name '_hymnFuture'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:545:33 • undefined_identifier
+  error • The function '_loadHymns' isn't defined. Try importing the library that defines '_loadHymns', correcting the name to the name of an existing function, or defining a function named '_loadHymns' • lib/feature/home/home_page/home_page.dart:545:47 • undefined_function
+warning • The annotation 'override' can only be used on fields, getters, methods, or setters • lib/feature/home/home_page/home_page.dart:653:4 • invalid_annotation_target
+  error • Undefined name '_currentTab'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:655:50 • undefined_identifier
+  error • Undefined name '_appBarLogic'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:659:16 • undefined_identifier
+  error • Undefined name '_selectionController'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:660:30 • undefined_identifier
+  error • Undefined name '_currentTab'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:666:36 • undefined_identifier
+  error • Undefined name '_onTabChanged'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:666:60 • undefined_identifier
+  error • Undefined name '_currentTab'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:667:17 • undefined_identifier
+  error • Undefined name '_currentTab'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:668:17 • undefined_identifier
+  error • Undefined name '_filter'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:675:28 • undefined_identifier
+  error • Undefined name '_filter'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:676:34 • undefined_identifier
+  error • Undefined name '_filter'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:677:29 • undefined_identifier
+  error • Undefined name '_filter'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:678:30 • undefined_identifier
+  error • Undefined name '_onKeyTap'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:680:25 • undefined_identifier
+  error • Undefined name '_onDedicatedTap'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:681:31 • undefined_identifier
+  error • Undefined name '_onYearTap'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:682:26 • undefined_identifier
+  error • Undefined name '_onResetFilters'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:684:24 • undefined_identifier
+  error • Undefined name '_keyLink'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:685:29 • undefined_identifier
+  error • Undefined name '_dedicatedLink'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:686:35 • undefined_identifier
+  error • Undefined name '_yearLink'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:687:30 • undefined_identifier
+  error • Undefined name '_tempoLink'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:688:31 • undefined_identifier
+  error • Undefined name '_keyButtonKey'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:689:29 • undefined_identifier
+  error • Undefined name '_dedicatedButtonKey'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:690:35 • undefined_identifier
+  error • Undefined name '_yearButtonKey'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:691:30 • undefined_identifier
+  error • Undefined name '_tempoButtonKey'. Try correcting the name to one that is defined, or defining the name • lib/feature/home/home_page/home_page.dart:692:31 • undefined_identifier
+  error • Expected a method, getter, setter or operator declaration. This appears to be incomplete code. Try removing it or completing it • lib/feature/home/home_page/home_page.dart:700:1 • expected_executable
+warning • 'getByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/favorite_song.g.dart:123:12 • experimental_member_use
+warning • 'getByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/favorite_song.g.dart:127:12 • experimental_member_use
+warning • 'deleteByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/favorite_song.g.dart:131:12 • experimental_member_use
+warning • 'deleteByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/favorite_song.g.dart:135:12 • experimental_member_use
+warning • 'getAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/favorite_song.g.dart:140:12 • experimental_member_use
+warning • 'getAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/favorite_song.g.dart:145:12 • experimental_member_use
+warning • 'deleteAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/favorite_song.g.dart:150:12 • experimental_member_use
+warning • 'deleteAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/favorite_song.g.dart:155:12 • experimental_member_use
+warning • 'putByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/favorite_song.g.dart:159:12 • experimental_member_use
+warning • 'putByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/favorite_song.g.dart:163:12 • experimental_member_use
+warning • 'putAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/favorite_song.g.dart:167:12 • experimental_member_use
+warning • 'putAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/favorite_song.g.dart:172:12 • experimental_member_use
+   info • The type of the right operand ('ConnectivityResult') isn't a subtype or a supertype of the left operand ('List<ConnectivityResult>'). Try changing one or both of the operands • lib/feature/home/hymn/hymn_info_bar.dart:64:18 • unrelated_type_equality_checks
+   info • The constant name 'NOTE_TYPE_FAVORITES' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/feature/home/hymn/hymn_models.dart:11:14 • constant_identifier_names
+   info • The constant name 'NOTE_TYPE_VIEWLIST' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/feature/home/hymn/hymn_models.dart:12:14 • constant_identifier_names
+   info • The constant name 'NOTE_TYPE_MEDLEY' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/feature/home/hymn/hymn_models.dart:13:14 • constant_identifier_names
+   info • The constant name 'ROLE_VIEWER' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/feature/home/hymn/hymn_models.dart:15:14 • constant_identifier_names
+   info • The constant name 'ROLE_ADMIN' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/feature/home/hymn/hymn_models.dart:16:14 • constant_identifier_names
+   info • The constant name 'ROLE_SUPER' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/feature/home/hymn/hymn_models.dart:17:14 • constant_identifier_names
+   info • The constant name 'ROLE_GUEST' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/feature/home/hymn/hymn_models.dart:18:14 • constant_identifier_names
+warning • 'getByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:304:12 • experimental_member_use
+warning • 'getByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:308:12 • experimental_member_use
+warning • 'deleteByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:312:12 • experimental_member_use
+warning • 'deleteByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:316:12 • experimental_member_use
+warning • 'getAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:321:12 • experimental_member_use
+warning • 'getAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:326:12 • experimental_member_use
+warning • 'deleteAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:331:12 • experimental_member_use
+warning • 'deleteAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:336:12 • experimental_member_use
+warning • 'putByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:340:12 • experimental_member_use
+warning • 'putByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:344:12 • experimental_member_use
+warning • 'putAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:348:12 • experimental_member_use
+warning • 'putAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:353:12 • experimental_member_use
+warning • 'getByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:3341:12 • experimental_member_use
+warning • 'getByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:3345:12 • experimental_member_use
+warning • 'deleteByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:3349:12 • experimental_member_use
+warning • 'deleteByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:3353:12 • experimental_member_use
+warning • 'getAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:3366:12 • experimental_member_use
+warning • 'getAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:3379:12 • experimental_member_use
+warning • 'deleteAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:3392:12 • experimental_member_use
+warning • 'deleteAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:3405:12 • experimental_member_use
+warning • 'putByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:3409:12 • experimental_member_use
+warning • 'putByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:3413:12 • experimental_member_use
+warning • 'putAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:3417:12 • experimental_member_use
+warning • 'putAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:3422:12 • experimental_member_use
+warning • 'getByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:5259:12 • experimental_member_use
+warning • 'getByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:5263:12 • experimental_member_use
+warning • 'deleteByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:5267:12 • experimental_member_use
+warning • 'deleteByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:5271:12 • experimental_member_use
+warning • 'getAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:5276:12 • experimental_member_use
+warning • 'getAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:5281:12 • experimental_member_use
+warning • 'deleteAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:5286:12 • experimental_member_use
+warning • 'deleteAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:5291:12 • experimental_member_use
+warning • 'putByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:5295:12 • experimental_member_use
+warning • 'putByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:5299:12 • experimental_member_use
+warning • 'putAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:5303:12 • experimental_member_use
+warning • 'putAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:5308:12 • experimental_member_use
+warning • 'getByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:7222:12 • experimental_member_use
+warning • 'getByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:7226:12 • experimental_member_use
+warning • 'deleteByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:7230:12 • experimental_member_use
+warning • 'deleteByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:7234:12 • experimental_member_use
+warning • 'getAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:7239:12 • experimental_member_use
+warning • 'getAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:7244:12 • experimental_member_use
+warning • 'deleteAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:7249:12 • experimental_member_use
+warning • 'deleteAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:7254:12 • experimental_member_use
+warning • 'putByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:7258:12 • experimental_member_use
+warning • 'putByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:7262:12 • experimental_member_use
+warning • 'putAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:7266:12 • experimental_member_use
+warning • 'putAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:7270:12 • experimental_member_use
+warning • 'getByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:9792:12 • experimental_member_use
+warning • 'getByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:9796:12 • experimental_member_use
+warning • 'deleteByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:9800:12 • experimental_member_use
+warning • 'deleteByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:9804:12 • experimental_member_use
+warning • 'getAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:9810:12 • experimental_member_use
+warning • 'getAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:9815:12 • experimental_member_use
+warning • 'deleteAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:9820:12 • experimental_member_use
+warning • 'deleteAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:9825:12 • experimental_member_use
+warning • 'putByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:9829:12 • experimental_member_use
+warning • 'putByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:9833:12 • experimental_member_use
+warning • 'putAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:9837:12 • experimental_member_use
+warning • 'putAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/hymn_models.g.dart:9842:12 • experimental_member_use
+   info • The constant name 'PINNED_HYMN_KEY' isn't a lowerCamelCase identifier. Try changing the name to follow the lowerCamelCase style • lib/feature/home/hymn/hymn_pin_button.dart:4:14 • constant_identifier_names
+warning • 'getByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:223:12 • experimental_member_use
+warning • 'getByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:227:12 • experimental_member_use
+warning • 'deleteByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:231:12 • experimental_member_use
+warning • 'deleteByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:235:12 • experimental_member_use
+warning • 'getAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:241:12 • experimental_member_use
+warning • 'getAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:247:12 • experimental_member_use
+warning • 'deleteAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:252:12 • experimental_member_use
+warning • 'deleteAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:257:12 • experimental_member_use
+warning • 'putByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:261:12 • experimental_member_use
+warning • 'putByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:265:12 • experimental_member_use
+warning • 'putAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:269:12 • experimental_member_use
+warning • 'putAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:274:12 • experimental_member_use
+warning • 'getByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:2077:12 • experimental_member_use
+warning • 'getByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:2081:12 • experimental_member_use
+warning • 'deleteByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:2085:12 • experimental_member_use
+warning • 'deleteByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:2089:12 • experimental_member_use
+warning • 'getAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:2094:12 • experimental_member_use
+warning • 'getAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:2099:12 • experimental_member_use
+warning • 'deleteAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:2104:12 • experimental_member_use
+warning • 'deleteAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:2109:12 • experimental_member_use
+warning • 'putByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:2113:12 • experimental_member_use
+warning • 'putByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:2117:12 • experimental_member_use
+warning • 'putAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:2121:12 • experimental_member_use
+warning • 'putAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:2126:12 • experimental_member_use
+warning • 'getByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:3967:12 • experimental_member_use
+warning • 'getByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:3971:12 • experimental_member_use
+warning • 'deleteByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:3975:12 • experimental_member_use
+warning • 'deleteByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:3979:12 • experimental_member_use
+warning • 'getAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:3985:12 • experimental_member_use
+warning • 'getAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:3990:12 • experimental_member_use
+warning • 'deleteAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:3995:12 • experimental_member_use
+warning • 'deleteAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:4000:12 • experimental_member_use
+warning • 'putByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:4004:12 • experimental_member_use
+warning • 'putByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:4008:12 • experimental_member_use
+warning • 'putAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:4012:12 • experimental_member_use
+warning • 'putAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:4017:12 • experimental_member_use
+warning • 'getByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:5821:12 • experimental_member_use
+warning • 'getByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:5825:12 • experimental_member_use
+warning • 'deleteByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:5829:12 • experimental_member_use
+warning • 'deleteByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:5833:12 • experimental_member_use
+warning • 'getAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:5838:12 • experimental_member_use
+warning • 'getAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:5843:12 • experimental_member_use
+warning • 'deleteAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:5848:12 • experimental_member_use
+warning • 'deleteAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:5853:12 • experimental_member_use
+warning • 'putByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:5857:12 • experimental_member_use
+warning • 'putByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:5861:12 • experimental_member_use
+warning • 'putAllByIndex' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:5865:12 • experimental_member_use
+warning • 'putAllByIndexSync' is experimental and could be removed or changed at any time • lib/feature/home/hymn/viewlist_medley_models.g.dart:5870:12 • experimental_member_use
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/feature/home/hymn/widgets/floating_notepad_window.dart:271:30 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/feature/home/hymn/widgets/floating_notepad_window.dart:275:28 • use_build_context_synchronously
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/feature/home/hymn/widgets/floating_notepad_window.dart:282:30 • use_build_context_synchronously
+   info • The 'if' statement could be replaced by a null-aware assignment. Try using the '??=' operator to conditionally assign a value • lib/feature/home/hymn/widgets/hymn_viewer_widget.dart:209:1 • prefer_conditional_assignment
+warning • Dead code. Try removing the code, or fixing the code before it so that it can be reached • lib/feature/home/repositories/folder_repository.dart:428:24 • dead_code
+warning • The left operand can't be null, so the right operand is never executed. Try removing the operator and the right operand • lib/feature/home/repositories/folder_repository.dart:428:27 • dead_null_aware_expression
+warning • Dead code. Try removing the code, or fixing the code before it so that it can be reached • lib/feature/home/repositories/folder_repository.dart:499:24 • dead_code
+warning • The left operand can't be null, so the right operand is never executed. Try removing the operator and the right operand • lib/feature/home/repositories/folder_repository.dart:499:27 • dead_null_aware_expression
+warning • Dead code. Try removing the code, or fixing the code before it so that it can be reached • lib/feature/home/repositories/folder_repository.dart:1363:24 • dead_code
+warning • The left operand can't be null, so the right operand is never executed. Try removing the operator and the right operand • lib/feature/home/repositories/folder_repository.dart:1363:27 • dead_null_aware_expression
+   info • Don't invoke 'print' in production code. Try using a logging framework • lib/feature/home/repositories/folder_repository.dart:1546:5 • avoid_print
+   info • Don't invoke 'print' in production code. Try using a logging framework • lib/feature/home/repositories/folder_repository.dart:1560:5 • avoid_print
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/screens/folder_doc_screen.dart:221:11 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/screens/folder_doc_screen.dart:223:11 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/screens/folder_doc_screen.dart:453:11 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/screens/folder_doc_screen.dart:455:11 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/screens/folder_doc_screen.dart:464:15 • curly_braces_in_flow_control_structures
+   info • 'onReorder' is deprecated and shouldn't be used. Use the onReorderItem callback instead. The onReorderItem callback adjusts the newIndex parameter for a removed item at the oldIndex. This feature was deprecated after v3.41.0-0.0.pre. Try replacing the use of the deprecated member with the replacement • lib/screens/folder_doc_screen.dart:634:13 • deprecated_member_use
+   info • Unnecessary braces in a string interpolation. Try removing the braces • lib/screens/folder_doc_screen.dart:775:64 • unnecessary_brace_in_string_interps
+   info • Don't use 'BuildContext's across async gaps. Try rewriting the code to not use the 'BuildContext', or guard the use with a 'mounted' check • lib/screens/folder_doc_screen.dart:1322:7 • use_build_context_synchronously
+   info • Don't invoke 'print' in production code. Try using a logging framework • lib/screens/folder_doc_screen.dart:1643:5 • avoid_print
+   info • Don't invoke 'print' in production code. Try using a logging framework • lib/screens/folder_doc_screen.dart:1657:5 • avoid_print
+warning • Dead code. Try removing the code, or fixing the code before it so that it can be reached • lib/screens/folder_doc_screen.dart:1861:31 • dead_code
+warning • The left operand can't be null, so the right operand is never executed. Try removing the operator and the right operand • lib/screens/folder_doc_screen.dart:1861:34 • dead_null_aware_expression
+warning • A value for optional parameter 'itemId' isn't ever given. Try removing the unused parameter • lib/screens/folder_doc_screen.dart:1927:10 • unused_element_parameter
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/screens/viewlist_screen.dart:57:17 • curly_braces_in_flow_control_structures
+   info • Statements in an if should be enclosed in a block. Try wrapping the statement in a block • lib/screens/viewlist_screen.dart:59:17 • curly_braces_in_flow_control_structures
+   info • Unnecessary braces in a string interpolation. Try removing the braces • lib/screens/viewlist_screen.dart:114:35 • unnecessary_brace_in_string_interps
+   info • Don't invoke 'print' in production code. Try using a logging framework • lib/services/firestore_service.dart:10:5 • avoid_print
+   info • Don't invoke 'print' in production code. Try using a logging framework • lib/services/firestore_service.dart:15:5 • avoid_print
+   info • Don't invoke 'print' in production code. Try using a logging framework • lib/services/firestore_service.dart:20:5 • avoid_print
+   info • Don't invoke 'print' in production code. Try using a logging framework • lib/services/firestore_service.dart:25:5 • avoid_print
+   info • Don't invoke 'print' in production code. Try using a logging framework • lib/services/firestore_service.dart:28:5 • avoid_print
+   info • Don't invoke 'print' in production code. Try using a logging framework • lib/services/firestore_service.dart:32:5 • avoid_print
+   info • Don't invoke 'print' in production code. Try using a logging framework • lib/services/firestore_service.dart:35:5 • avoid_print
+
+299 issues found. (ran in 5.8s)

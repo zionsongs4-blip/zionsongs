@@ -1,0 +1,11 @@
+{
+  "system": {
+    "appName": "Zion Songs",
+    "minimumVersion": 1,
+    "requireGoogleSignIn": true,
+    "requireApproval": true,
+    "allowOffline": true,
+    "allowMultipleDevices": false,
+    "enableEncryption": false
+  }
+}
