@@ -31,7 +31,8 @@ bool isEligibleOpenDestinationTab(WorkspaceTab tab) {
   }
 
   // Never target Continuous Viewer tab
-  if (tab.type == WorkspaceTabType.hymn && tab.arguments['viewerMode'] == 'continuous') {
+  if (tab.type == WorkspaceTabType.hymn &&
+      tab.arguments['viewerMode'] == 'continuous') {
     return false;
   }
 
@@ -85,7 +86,8 @@ class _HomePageState extends State<HomePage> {
   String _searchText = '';
   List<HomeSearchResult> _searchResults = const <HomeSearchResult>[];
   bool _collectionWorkspaceVisible = false;
-  final GlobalKey<HymnCollectionWorkspaceState> _collectionWorkspaceKey = GlobalKey<HymnCollectionWorkspaceState>();
+  final GlobalKey<HymnCollectionWorkspaceState> _collectionWorkspaceKey =
+      GlobalKey<HymnCollectionWorkspaceState>();
 
   WorkspaceTab get _activeWorkspace =>
       _workspaceManager.activeTab ?? _workspaceManager.tabs.first;
@@ -102,14 +104,16 @@ class _HomePageState extends State<HomePage> {
     super.initState();
 
     _selectionController = HomeSelectionController();
-    _workspaceManager = WorkspaceManager(initialTabs: [
-      const WorkspaceTab(
-        id: 'home',
-        title: 'Home',
-        type: WorkspaceTabType.home,
-        closable: false,
-      ),
-    ]);
+    _workspaceManager = WorkspaceManager(
+      initialTabs: [
+        const WorkspaceTab(
+          id: 'home',
+          title: 'Home',
+          type: WorkspaceTabType.home,
+          closable: false,
+        ),
+      ],
+    );
     _workspaceManager.addListener(_onWorkspaceChanged);
     _repository = HomeRepositoryImpl();
     _favoritesRepository = FavoritesRepository();
@@ -287,7 +291,9 @@ class _HomePageState extends State<HomePage> {
   ) async {
     if (!mounted) return;
 
-    final effectiveHymnIds = hymnIds.isNotEmpty ? hymnIds : [hymnId];
+    final effectiveHymnIds = hymnIds.isNotEmpty
+        ? <String>[hymnId, ...hymnIds.where((id) => id != hymnId)]
+        : <String>[hymnId];
 
     _workspaceManager.openTab(
       WorkspaceTab(
@@ -326,7 +332,6 @@ class _HomePageState extends State<HomePage> {
           'initialHymnId': hymnId,
           'primaryHymnId': hymnId,
           'folderName': folderName ?? 'Collection',
-          'displayMode': 'displayChorus',
           'viewerMode': 'collection',
           'browsing': true,
         },
@@ -372,10 +377,7 @@ class _HomePageState extends State<HomePage> {
         title: 'Selection (${hymnIds.length})',
         type: WorkspaceTabType.selection,
         closable: true,
-        arguments: {
-          'hymnIds': hymnIds,
-          'displayMode': 'all',
-        },
+        arguments: {'hymnIds': hymnIds, 'displayMode': 'all'},
       ),
     );
 
@@ -460,7 +462,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  Future<void> _showExistingScreensDialog(List<String> hymnIds, List<WorkspaceTab> eligibleTabs) async {
+  Future<void> _showExistingScreensDialog(
+    List<String> hymnIds,
+    List<WorkspaceTab> eligibleTabs,
+  ) async {
     final chosenTab = await showDialog<WorkspaceTab>(
       context: context,
       builder: (dialogContext) {
@@ -473,7 +478,9 @@ class _HomePageState extends State<HomePage> {
               itemCount: eligibleTabs.length,
               itemBuilder: (context, index) {
                 final tab = eligibleTabs[index];
-                final existingHymnIds = List<String>.from(tab.arguments['hymnIds'] ?? <String>[]);
+                final existingHymnIds = List<String>.from(
+                  tab.arguments['hymnIds'] ?? <String>[],
+                );
                 return ListTile(
                   title: Text(tab.title),
                   subtitle: Text('${existingHymnIds.length} hymns'),
@@ -496,10 +503,15 @@ class _HomePageState extends State<HomePage> {
     await _addHymnsToExistingTab(chosenTab, hymnIds);
   }
 
-  Future<void> _addHymnsToExistingTab(WorkspaceTab chosenTab, List<String> hymnIds) async {
+  Future<void> _addHymnsToExistingTab(
+    WorkspaceTab chosenTab,
+    List<String> hymnIds,
+  ) async {
     if (hymnIds.isEmpty) return;
 
-    final existingIds = List<String>.from(chosenTab.arguments['hymnIds'] ?? <String>[]);
+    final existingIds = List<String>.from(
+      chosenTab.arguments['hymnIds'] ?? <String>[],
+    );
     final mergedIds = <String>[];
     final seenIds = <String>{};
     for (final hymnId in [...existingIds, ...hymnIds]) {
@@ -508,28 +520,36 @@ class _HomePageState extends State<HomePage> {
       }
     }
 
-    final index = _workspaceManager.tabs.indexWhere((tab) => tab.id == chosenTab.id);
+    final index = _workspaceManager.tabs.indexWhere(
+      (tab) => tab.id == chosenTab.id,
+    );
     if (index != -1) {
       final updatedArguments = Map<String, dynamic>.from(chosenTab.arguments);
       final existingViewerMode = chosenTab.arguments['viewerMode'];
 
       updatedArguments['hymnIds'] = mergedIds;
       if (chosenTab.type == WorkspaceTabType.selection) {
-        updatedArguments['displayMode'] = chosenTab.arguments['displayMode'] ?? 'all';
+        updatedArguments['displayMode'] =
+            chosenTab.arguments['displayMode'] ?? 'all';
       } else {
-        updatedArguments['initialHymnId'] = existingIds.isEmpty ? hymnIds.first : existingIds.first;
+        updatedArguments['initialHymnId'] = existingIds.isEmpty
+            ? hymnIds.first
+            : existingIds.first;
         updatedArguments['viewerMode'] = existingViewerMode ?? 'standalone';
         updatedArguments['browsing'] = false;
       }
 
-      _workspaceManager.replaceTabAt(index, chosenTab.copyWith(arguments: updatedArguments));
+      _workspaceManager.replaceTabAt(
+        index,
+        chosenTab.copyWith(arguments: updatedArguments),
+      );
       _workspaceManager.activateTab(index);
     }
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Added to "${chosenTab.title}".')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text('Added to "${chosenTab.title}".')));
   }
 
   Future<void> _showScreenSelectorDialog(List<String> hymnIds) async {
@@ -541,7 +561,11 @@ class _HomePageState extends State<HomePage> {
 
     if (existingScreens.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No existing customized screens available. Create a new screen first.')),
+        const SnackBar(
+          content: Text(
+            'No existing customized screens available. Create a new screen first.',
+          ),
+        ),
       );
       return;
     }
@@ -558,7 +582,9 @@ class _HomePageState extends State<HomePage> {
               itemCount: existingScreens.length,
               itemBuilder: (context, index) {
                 final screen = existingScreens[index];
-                final hymnIds = List<String>.from(screen.arguments['hymnIds'] ?? <String>[]);
+                final hymnIds = List<String>.from(
+                  screen.arguments['hymnIds'] ?? <String>[],
+                );
                 return ListTile(
                   title: Text(screen.title),
                   subtitle: Text('${hymnIds.length} hymns'),
@@ -578,22 +604,28 @@ class _HomePageState extends State<HomePage> {
     );
 
     if (chosenScreen != null) {
-      final updatedIds = <String>{...List<String>.from(chosenScreen.arguments['hymnIds'] ?? <String>[]), ...hymnIds}.toList();
-      final index = _workspaceManager.tabs.indexWhere((t) => t.id == chosenScreen.id);
+      final updatedIds = <String>{
+        ...List<String>.from(chosenScreen.arguments['hymnIds'] ?? <String>[]),
+        ...hymnIds,
+      }.toList();
+      final index = _workspaceManager.tabs.indexWhere(
+        (t) => t.id == chosenScreen.id,
+      );
       if (index != -1) {
         _workspaceManager.replaceTabAt(
           index,
-          chosenScreen.copyWith(arguments: {
-            ...chosenScreen.arguments,
-            'hymnIds': updatedIds,
-          }),
+          chosenScreen.copyWith(
+            arguments: {...chosenScreen.arguments, 'hymnIds': updatedIds},
+          ),
         );
         _workspaceManager.activateTab(index);
       }
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Added to "${chosenScreen.title}" successfully!')),
+        SnackBar(
+          content: Text('Added to "${chosenScreen.title}" successfully!'),
+        ),
       );
     }
   }
@@ -690,9 +722,7 @@ class _HomePageState extends State<HomePage> {
         title: 'Favorites',
         type: WorkspaceTabType.favorites,
         closable: true,
-        arguments: {
-          'hymnIds': favoriteIds,
-        },
+        arguments: {'hymnIds': favoriteIds},
       ),
     );
   }
@@ -708,7 +738,9 @@ class _HomePageState extends State<HomePage> {
       WorkspaceTab(
         id: '${collection}_$docId',
         title: title,
-        type: collection == 'medleys' ? WorkspaceTabType.medley : WorkspaceTabType.viewList,
+        type: collection == 'medleys'
+            ? WorkspaceTabType.medley
+            : WorkspaceTabType.viewList,
         closable: true,
         arguments: {
           'collection': collection,
@@ -755,13 +787,19 @@ class _HomePageState extends State<HomePage> {
       case WorkspaceTabType.home:
         return _buildHomeContent();
       case WorkspaceTabType.hymn:
-        final viewerMode = workspace.arguments['viewerMode'] as String? ?? 'standalone';
-        final hymnIds = List<String>.from(workspace.arguments['hymnIds'] ?? <String>[]);
-        final initialHymnId = workspace.arguments['initialHymnId'] as String? ??
+        final viewerMode =
+            workspace.arguments['viewerMode'] as String? ?? 'standalone';
+        final hymnIds = List<String>.from(
+          workspace.arguments['hymnIds'] ?? <String>[],
+        );
+        final initialHymnId =
+            workspace.arguments['initialHymnId'] as String? ??
             (hymnIds.isNotEmpty ? hymnIds.first : '');
         if (viewerMode == 'collection') {
-          final primaryHymnId = workspace.arguments['primaryHymnId'] as String? ?? initialHymnId;
-          final folderName = workspace.arguments['folderName'] as String? ?? 'Collection';
+          final primaryHymnId =
+              workspace.arguments['primaryHymnId'] as String? ?? initialHymnId;
+          final folderName =
+              workspace.arguments['folderName'] as String? ?? 'Collection';
           final displayMode = _parseCollectionDisplayMode(
             workspace.arguments['displayMode'] as String?,
           );
@@ -785,7 +823,9 @@ class _HomePageState extends State<HomePage> {
           hymnIds: hymnIds,
         );
       case WorkspaceTabType.selection:
-        final hymnIds = List<String>.from(workspace.arguments['hymnIds'] ?? <String>[]);
+        final hymnIds = List<String>.from(
+          workspace.arguments['hymnIds'] ?? <String>[],
+        );
         return FutureBuilder<List<models.HomeHymn>>(
           future: _loadHymnsByIds(hymnIds),
           builder: (context, snapshot) {
@@ -808,7 +848,9 @@ class _HomePageState extends State<HomePage> {
           },
         );
       case WorkspaceTabType.favorites:
-        final hymnIds = List<String>.from(workspace.arguments['hymnIds'] ?? <String>[]);
+        final hymnIds = List<String>.from(
+          workspace.arguments['hymnIds'] ?? <String>[],
+        );
         return FutureBuilder<List<models.HomeHymn>>(
           future: _loadHymnsByIds(hymnIds),
           builder: (context, snapshot) {
@@ -838,13 +880,15 @@ class _HomePageState extends State<HomePage> {
       case WorkspaceTabType.medley:
         return FolderDocScreen(
           key: ValueKey('folder_${workspace.id}'),
-          collection: workspace.arguments['collection'] as String? ?? 'viewlists',
+          collection:
+              workspace.arguments['collection'] as String? ?? 'viewlists',
           docId: workspace.arguments['docId'] as String? ?? 'root',
           docName: workspace.arguments['title'] as String? ?? workspace.title,
           onOpenCollection: (hymnId, hymnIds, folderName) {
             _openCollectionHymnWorkspace(hymnId, hymnIds);
           },
-          initialHighlightHymnId: workspace.arguments['primaryHymnId'] as String?,
+          initialHighlightHymnId:
+              workspace.arguments['primaryHymnId'] as String?,
         );
     }
   }

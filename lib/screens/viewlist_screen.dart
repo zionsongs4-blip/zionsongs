@@ -53,19 +53,14 @@ class _ViewListScreenState extends State<ViewListScreen> {
             future: _buildResults(),
             builder: (context, snapshot) {
               if (snapshot.hasError) {
-                return Center(
-                  child: Text('Error: ${snapshot.error}'),
-                );
+                return Center(child: Text('Error: ${snapshot.error}'));
               }
 
               if (!snapshot.hasData) {
-                return const Center(
-                  child: CircularProgressIndicator(),
-                );
+                return const Center(child: CircularProgressIndicator());
               }
 
-              final results =
-                  snapshot.data ?? const <_FolderSearchResult>[];
+              final results = snapshot.data ?? const <_FolderSearchResult>[];
 
               if (results.isEmpty) {
                 return const Center(
@@ -80,8 +75,7 @@ class _ViewListScreenState extends State<ViewListScreen> {
                       kMinInteractiveDimension * 4,
                 ),
                 itemCount: results.length,
-                separatorBuilder: (context, index) =>
-                    const Divider(height: 1),
+                separatorBuilder: (context, index) => const Divider(height: 1),
                 itemBuilder: (context, index) {
                   final result = results[index];
 
@@ -142,28 +136,20 @@ class _ViewListScreenState extends State<ViewListScreen> {
     if (query.isEmpty) {
       return folderRecords.map((folder) {
         final folderHymnIds = _orderedHymnIdsForFolder(
-          itemsByFolder[folder.folderId] ??
-              const <_CollectionItemRecord>[],
+          itemsByFolder[folder.folderId] ?? const <_CollectionItemRecord>[],
         );
 
-        final folderName =
-            folder.name.isNotEmpty ? folder.name : folder.folderId;
+        final folderName = folder.name.isNotEmpty
+            ? folder.name
+            : folder.folderId;
 
         return _FolderSearchResult(
           docId: folder.folderId,
           displayName: folderName,
           title: folderName,
-          pathLabel: _formatFolderPath(
-            folder.folderId,
-            folderMap,
-          ),
-          path: _buildFolderPathIds(
-            folder.folderId,
-            folderMap,
-          ),
-          hymnId: folderHymnIds.isNotEmpty
-              ? folderHymnIds.first
-              : '',
+          pathLabel: _formatFolderPath(folder.folderId, folderMap),
+          path: _buildFolderPathIds(folder.folderId, folderMap),
+          hymnId: folderHymnIds.isNotEmpty ? folderHymnIds.first : '',
           folderId: folder.folderId,
           folderName: folderName,
           folderHymnIds: folderHymnIds,
@@ -175,16 +161,13 @@ class _ViewListScreenState extends State<ViewListScreen> {
     // Load ONLY the hymns that are actually referenced by this
     // View List or Medley collection.
     // ---------------------------------------------------------------
-    final collectionHymnIds =
-        itemRecords.map((item) => item.hymnId).toSet();
+    final collectionHymnIds = itemRecords.map((item) => item.hymnId).toSet();
 
-    final hymns =
-        await AppInitializer.isar.localHymns.where().findAll();
+    final hymns = await AppInitializer.isar.localHymns.where().findAll();
 
     final hymnMap = {
       for (final hymn in hymns)
-        if (collectionHymnIds.contains(hymn.hymnId))
-          hymn.hymnId: hymn,
+        if (collectionHymnIds.contains(hymn.hymnId)) hymn.hymnId: hymn,
     };
 
     // ---------------------------------------------------------------
@@ -214,12 +197,10 @@ class _ViewListScreenState extends State<ViewListScreen> {
       }
 
       final folderHymnIds = _orderedHymnIdsForFolder(
-        itemsByFolder[item.folderId] ??
-            const <_CollectionItemRecord>[],
+        itemsByFolder[item.folderId] ?? const <_CollectionItemRecord>[],
       );
 
-      final folderName =
-          folder.name.isNotEmpty ? folder.name : folder.folderId;
+      final folderName = folder.name.isNotEmpty ? folder.name : folder.folderId;
 
       // If this folder has already matched another hymn, don't add
       // another copy of the same folder.
@@ -229,14 +210,8 @@ class _ViewListScreenState extends State<ViewListScreen> {
           docId: folder.folderId,
           displayName: folderName,
           title: folderName,
-          pathLabel: _formatFolderPath(
-            folder.folderId,
-            folderMap,
-          ),
-          path: _buildFolderPathIds(
-            folder.folderId,
-            folderMap,
-          ),
+          pathLabel: _formatFolderPath(folder.folderId, folderMap),
+          path: _buildFolderPathIds(folder.folderId, folderMap),
           hymnId: hymn.hymnId,
           folderId: folder.folderId,
           folderName: folderName,
@@ -248,9 +223,7 @@ class _ViewListScreenState extends State<ViewListScreen> {
     final matches = folderResults.values.toList();
 
     matches.sort(
-      (a, b) => a.title
-          .toLowerCase()
-          .compareTo(b.title.toLowerCase()),
+      (a, b) => a.title.toLowerCase().compareTo(b.title.toLowerCase()),
     );
 
     return matches;
@@ -264,10 +237,7 @@ class _ViewListScreenState extends State<ViewListScreen> {
     return value.trim().toLowerCase();
   }
 
-  bool _matchesCollectionSearchQuery(
-    LocalHymn hymn,
-    String query,
-  ) {
+  bool _matchesCollectionSearchQuery(LocalHymn hymn, String query) {
     if (query.isEmpty) {
       return true;
     }
@@ -280,40 +250,35 @@ class _ViewListScreenState extends State<ViewListScreen> {
     }
 
     // 2. Search text
-    final searchText =
-        (hymn.searchText ?? '').toLowerCase();
+    final searchText = (hymn.searchText ?? '').toLowerCase();
 
     if (searchText.contains(query)) {
       return true;
     }
 
     // 3. Hindi lyrics
-    final hindi =
-        (hymn.hindiLyrics ?? '').toLowerCase();
+    final hindi = (hymn.hindiLyrics ?? '').toLowerCase();
 
     if (hindi.contains(query)) {
       return true;
     }
 
     // 4. Malayalam lyrics
-    final malayalam =
-        (hymn.malayalamLyrics ?? '').toLowerCase();
+    final malayalam = (hymn.malayalamLyrics ?? '').toLowerCase();
 
     if (malayalam.contains(query)) {
       return true;
     }
 
     // 5. English lyrics
-    final english =
-        (hymn.englishLyrics ?? '').toLowerCase();
+    final english = (hymn.englishLyrics ?? '').toLowerCase();
 
     if (english.contains(query)) {
       return true;
     }
 
     // 6. Title
-    final title =
-        (hymn.title ?? '').toLowerCase();
+    final title = (hymn.title ?? '').toLowerCase();
 
     if (title.contains(query)) {
       return true;
@@ -328,10 +293,9 @@ class _ViewListScreenState extends State<ViewListScreen> {
 
   Future<List<_FolderRecordLike>> _loadFolderRecords() async {
     if (widget.collection == 'medleys') {
-      final records =
-          await AppInitializer.isar.medleyFolderRecords
-              .where()
-              .findAll();
+      final records = await AppInitializer.isar.medleyFolderRecords
+          .where()
+          .findAll();
 
       return records
           .map(
@@ -344,10 +308,9 @@ class _ViewListScreenState extends State<ViewListScreen> {
           .toList();
     }
 
-    final records =
-        await AppInitializer.isar.viewListFolderRecords
-            .where()
-            .findAll();
+    final records = await AppInitializer.isar.viewListFolderRecords
+        .where()
+        .findAll();
 
     return records
         .map(
@@ -366,10 +329,9 @@ class _ViewListScreenState extends State<ViewListScreen> {
 
   Future<List<_CollectionItemRecord>> _loadItemRecords() async {
     if (widget.collection == 'medleys') {
-      final records =
-          await AppInitializer.isar.medleyItemRecords
-              .where()
-              .findAll();
+      final records = await AppInitializer.isar.medleyItemRecords
+          .where()
+          .findAll();
 
       return records
           .map(
@@ -382,10 +344,9 @@ class _ViewListScreenState extends State<ViewListScreen> {
           .toList();
     }
 
-    final records =
-        await AppInitializer.isar.viewListItemRecords
-            .where()
-            .findAll();
+    final records = await AppInitializer.isar.viewListItemRecords
+        .where()
+        .findAll();
 
     return records
         .map(
@@ -402,15 +363,11 @@ class _ViewListScreenState extends State<ViewListScreen> {
   // ORDER HYMNS INSIDE FOLDER
   // ===============================================================
 
-  List<String> _orderedHymnIdsForFolder(
-    List<_CollectionItemRecord> items,
-  ) {
-    final ordered =
-        List<_CollectionItemRecord>.from(items);
+  List<String> _orderedHymnIdsForFolder(List<_CollectionItemRecord> items) {
+    final ordered = List<_CollectionItemRecord>.from(items);
 
     ordered.sort((a, b) {
-      final sortOrderDelta =
-          a.sortOrder.compareTo(b.sortOrder);
+      final sortOrderDelta = a.sortOrder.compareTo(b.sortOrder);
 
       if (sortOrderDelta != 0) {
         return sortOrderDelta;
@@ -441,13 +398,8 @@ class _ViewListScreenState extends State<ViewListScreen> {
     var current = folderMap[folderId];
     final visited = <String>{};
 
-    while (
-        current != null &&
-        visited.add(current.folderId)) {
-      final name =
-          current.name.isNotEmpty
-              ? current.name
-              : current.folderId;
+    while (current != null && visited.add(current.folderId)) {
+      final name = current.name.isNotEmpty ? current.name : current.folderId;
 
       names.insert(0, name);
 
@@ -473,16 +425,13 @@ class _ViewListScreenState extends State<ViewListScreen> {
     BuildContext context,
     _FolderSearchResult result,
   ) async {
-    final folderHymnIds =
-        List<String>.from(result.folderHymnIds);
+    final folderHymnIds = List<String>.from(result.folderHymnIds);
 
     if (folderHymnIds.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text(
-              'No hymns are available in this folder yet.',
-            ),
+            content: Text('No hymns are available in this folder yet.'),
           ),
         );
       }
@@ -491,13 +440,11 @@ class _ViewListScreenState extends State<ViewListScreen> {
     }
 
     // The hymn which matched the search becomes the primary hymn.
-    final primaryHymnId =
-        folderHymnIds.contains(result.hymnId)
-            ? result.hymnId
-            : folderHymnIds.first;
+    final primaryHymnId = folderHymnIds.contains(result.hymnId)
+        ? result.hymnId
+        : folderHymnIds.first;
 
-    final orderedHymnIds =
-        List<String>.from(folderHymnIds);
+    final orderedHymnIds = List<String>.from(folderHymnIds);
 
     if (orderedHymnIds.contains(primaryHymnId)) {
       orderedHymnIds.remove(primaryHymnId);
@@ -507,20 +454,15 @@ class _ViewListScreenState extends State<ViewListScreen> {
     }
 
     final newTab = CollectionTab(
-      id:
-          'collection_${widget.collection}_${result.folderId}_${DateTime.now().millisecondsSinceEpoch}',
+      id: 'collection_${widget.collection}_${result.folderId}_${DateTime.now().millisecondsSinceEpoch}',
       folderName: result.folderName,
       primaryHymnId: primaryHymnId,
       hymnIds: orderedHymnIds,
-      displayTitle:
-          '${result.folderName} ($primaryHymnId)',
-      displayMode:
-          CollectionDisplayMode.displayChorus,
+      displayTitle: '${result.folderName} ($primaryHymnId)',
     );
 
     final workspaceState = context
-        .findAncestorStateOfType<
-            HymnCollectionWorkspaceState>();
+        .findAncestorStateOfType<HymnCollectionWorkspaceState>();
 
     if (workspaceState != null) {
       workspaceState.openTab(newTab);
@@ -528,12 +470,8 @@ class _ViewListScreenState extends State<ViewListScreen> {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) => Scaffold(
-            appBar: AppBar(
-              title: Text(result.folderName),
-            ),
-            body: HymnCollectionWorkspace(
-              initialTabs: [newTab],
-            ),
+            appBar: AppBar(title: Text(result.folderName)),
+            body: HymnCollectionWorkspace(initialTabs: [newTab]),
           ),
         ),
       );
