@@ -89,6 +89,65 @@ void main() {
       expect(html, contains('മലയാളം പാട്ട്'));
     });
 
+    test('accepts only valid PDF bytes from the converter', () async {
+      final service = PdfExportService(
+        htmlConverter: (html, format) async => Uint8List.fromList([
+          0x25,
+          0x50,
+          0x44,
+          0x46,
+          0x2D,
+          0x31,
+          0x2E,
+          0x34,
+        ]),
+      );
+
+      final pdfBytes = await service.generateHymnPdf([
+        LocalHymn()
+          ..hymnId = 'h1'
+          ..title = 'Indic test'
+          ..hindiLyrics = 'क्षमा प्रार्थना'
+          ..malayalamLyrics = 'സ്തോത്രം',
+      ]);
+
+      expect(String.fromCharCodes(pdfBytes.take(4)), equals('%PDF'));
+    });
+
+    test('fails clearly when conversion returns invalid data', () async {
+      final service = PdfExportService(
+        htmlConverter: (html, format) async => Uint8List.fromList([1, 2, 3]),
+      );
+
+      expect(
+        () => service.generateHymnPdf([
+          LocalHymn()
+            ..hymnId = 'h1'
+            ..title = 'Invalid test',
+        ]),
+        throwsStateError,
+      );
+    });
+
+    test('fails clearly when native conversion times out', () async {
+      final service = PdfExportService(
+        conversionTimeout: const Duration(milliseconds: 1),
+        htmlConverter: (html, format) async {
+          await Future<void>.delayed(const Duration(milliseconds: 20));
+          return Uint8List.fromList([0x25, 0x50, 0x44, 0x46]);
+        },
+      );
+
+      expect(
+        () => service.generateHymnPdf([
+          LocalHymn()
+            ..hymnId = 'h1'
+            ..title = 'Timeout test',
+        ]),
+        throwsStateError,
+      );
+    });
+
     test(
       'save action writes the generated PDF when the picker is unavailable',
       () async {

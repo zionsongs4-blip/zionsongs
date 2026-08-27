@@ -59,6 +59,21 @@ void main() {
     ]);
   });
 
+  test('batch navigation reconstructs the complete nested folder path', () {
+    for (final collection in ['viewlists', 'medleys']) {
+      expect(
+        resolveRelationshipFolderPath(
+          folderId: 'child',
+          collection: collection,
+          docId: 'all-zones',
+          encodedPath: ['child'],
+          parentById: {'child': 'parent', 'parent': null},
+        ),
+        ['parent', 'child'],
+      );
+    }
+  });
+
   testWidgets('locations page shows names without exposing backend paths', (
     tester,
   ) async {

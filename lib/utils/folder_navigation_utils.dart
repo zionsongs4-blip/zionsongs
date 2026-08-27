@@ -52,3 +52,28 @@ List<String> uniqueIdsPreservingOrder(Iterable<String> ids) {
       if (seen.add(id)) id,
   ];
 }
+
+List<String> resolveRelationshipFolderPath({
+  required String folderId,
+  required String collection,
+  required String docId,
+  required List<String> encodedPath,
+  required Map<String, String?> parentById,
+}) {
+  if (encodedPath.isEmpty) return const <String>[];
+
+  final path = <String>[];
+  var currentId = folderId;
+  final visited = <String>{};
+  while (visited.add(currentId)) {
+    path.insert(0, currentId);
+    final parentId = parentById[currentId];
+    if (parentId == null || parentId.isEmpty) break;
+    currentId = parentId;
+  }
+
+  if (path.length >= encodedPath.length) return path;
+  return encodedPath
+      .map((id) => '$collection::$docId::$id')
+      .toList();
+}

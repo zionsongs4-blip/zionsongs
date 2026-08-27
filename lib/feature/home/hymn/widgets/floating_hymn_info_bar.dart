@@ -280,10 +280,12 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
         if (!folderIds.add(record.folderId)) continue;
         final parsed = parseRelationshipFolderKey(record.folderId);
         if (parsed.collection.isEmpty) continue;
-        final pathIds = _resolveStoredFolderPath(
-          record.folderId,
-          parentById,
-          parsed,
+        final pathIds = resolveRelationshipFolderPath(
+          folderId: record.folderId,
+          collection: parsed.collection,
+          docId: parsed.docId,
+          encodedPath: parsed.path,
+          parentById: parentById,
         );
         debugPrint(
           'Batch folder: folderId=${record.folderId} '
@@ -294,7 +296,7 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
           CollectionLocation(
             collection: parsed.collection,
             docId: parsed.docId,
-            path: parsed.path,
+            path: pathIds,
             folderName: namesById[record.folderId]?.isNotEmpty == true
                 ? namesById[record.folderId]!
               : 'Unnamed folder',
@@ -325,10 +327,12 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
         if (!folderIds.add(record.folderId)) continue;
         final parsed = parseRelationshipFolderKey(record.folderId);
         if (parsed.collection.isEmpty) continue;
-        final pathIds = _resolveStoredFolderPath(
-          record.folderId,
-          parentById,
-          parsed,
+        final pathIds = resolveRelationshipFolderPath(
+          folderId: record.folderId,
+          collection: parsed.collection,
+          docId: parsed.docId,
+          encodedPath: parsed.path,
+          parentById: parentById,
         );
         debugPrint(
           'Batch folder: folderId=${record.folderId} '
@@ -339,7 +343,7 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
           CollectionLocation(
             collection: parsed.collection,
             docId: parsed.docId,
-            path: parsed.path,
+            path: pathIds,
             folderName: namesById[record.folderId]?.isNotEmpty == true
                 ? namesById[record.folderId]!
               : 'Unnamed folder',
@@ -366,28 +370,6 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
         ),
       ),
     );
-  }
-
-  List<String> _resolveStoredFolderPath(
-    String folderId,
-    Map<String, String?> parentById,
-    RelationshipFolderKey parsed,
-  ) {
-    if (parsed.path.isEmpty) return const <String>[];
-    final path = <String>[];
-    var currentId = folderId;
-    final visited = <String>{};
-    while (visited.add(currentId)) {
-      path.insert(0, currentId);
-      final parentId = parentById[currentId];
-      if (parentId == null || parentId.isEmpty) break;
-      currentId = parentId;
-    }
-    return path.length == parsed.path.length
-        ? path
-        : parsed.path
-              .map((id) => '${parsed.collection}::${parsed.docId}::$id')
-              .toList();
   }
 
   Future<void> _togglePin() async {
