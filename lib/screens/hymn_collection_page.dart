@@ -518,7 +518,6 @@ class HymnCollectionWorkspaceState extends State<HymnCollectionWorkspace> {
               initialHymns: [primary],
               mode: ViewerMode.displayAll,
               onSearchResultSelected: _selectSearchedHymn,
-              onOpenSearchResult: widget.onOpenHymn,
               lyricsScaleNotifier: _lyricsScaleNotifier,
             ),
           ),

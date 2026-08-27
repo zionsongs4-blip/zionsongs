@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter/material.dart';
 import 'package:zionsongs/screens/hymn_collection_page.dart';
+import 'package:zionsongs/screens/collection_locations_screen.dart';
 import 'package:zionsongs/feature/home/hymn/hymn_models.dart';
 import 'package:zionsongs/utils/folder_navigation_utils.dart';
 
@@ -55,5 +57,37 @@ void main() {
       'folder-a',
       'folder-b',
     ]);
+  });
+
+  testWidgets('locations page shows names without exposing backend paths', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        home: CollectionLocationsScreen(
+          collection: 'viewlists',
+          hymnId: 'ZS0024',
+          locations: const [
+            CollectionLocation(
+              collection: 'viewlists',
+              docId: 'all-zones',
+              path: ['central-india', 'mum-central-zone'],
+              folderName: 'Mum Central Zone',
+            ),
+            CollectionLocation(
+              collection: 'viewlists',
+              docId: 'sunday-service',
+              path: ['sunday-service'],
+              folderName: 'Sunday Service',
+            ),
+          ],
+        ),
+      ),
+    );
+
+    expect(find.text('Mum Central Zone'), findsOneWidget);
+    expect(find.text('Sunday Service'), findsOneWidget);
+    expect(find.textContaining('central-india'), findsNothing);
+    expect(find.textContaining('viewlists::'), findsNothing);
   });
 }

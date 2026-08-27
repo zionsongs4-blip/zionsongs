@@ -12,25 +12,9 @@ import '../../search/home_search_controller.dart';
 import '../../search/home_search_result_tile.dart';
 import '../../search/home_search_repository.dart';
 import '../../../../services/speech_to_text_service.dart';
-import '../../../../screens/folder_doc_screen.dart';
+import '../../../../screens/collection_locations_screen.dart';
 import '../../../home/repositories/folder_repository.dart';
 import '../../../../utils/folder_navigation_utils.dart';
-
-class _FolderLocation {
-  const _FolderLocation({
-    required this.collection,
-    required this.docId,
-    required this.path,
-    required this.label,
-    required this.pathLabel,
-  });
-
-  final String collection;
-  final String docId;
-  final List<String> path;
-  final String label;
-  final String pathLabel;
-}
 
 class FloatingHymnInfoBar extends StatefulWidget {
   final LocalHymn hymn;
@@ -269,7 +253,7 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
   Future<void> _showFolderNames(String type) async {
     if (!mounted) return;
 
-    final locations = <_FolderLocation>[];
+    final locations = <CollectionLocation>[];
     final folderIds = <String>{};
 
     if (type == NOTE_TYPE_VIEWLIST) {
@@ -307,14 +291,13 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
           'path=${pathIds.join(' > ')}',
         );
         locations.add(
-          _FolderLocation(
+          CollectionLocation(
             collection: parsed.collection,
             docId: parsed.docId,
             path: parsed.path,
-            label: namesById[record.folderId]?.isNotEmpty == true
+            folderName: namesById[record.folderId]?.isNotEmpty == true
                 ? namesById[record.folderId]!
-                : (parsed.path.isEmpty ? 'Root' : parsed.path.last),
-            pathLabel: _formatStoredFolderPath(pathIds, namesById, parsed),
+              : 'Unnamed folder',
           ),
         );
       }
@@ -353,14 +336,13 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
           'path=${pathIds.join(' > ')}',
         );
         locations.add(
-          _FolderLocation(
+          CollectionLocation(
             collection: parsed.collection,
             docId: parsed.docId,
             path: parsed.path,
-            label: namesById[record.folderId]?.isNotEmpty == true
+            folderName: namesById[record.folderId]?.isNotEmpty == true
                 ? namesById[record.folderId]!
-                : (parsed.path.isEmpty ? 'Root' : parsed.path.last),
-            pathLabel: _formatStoredFolderPath(pathIds, namesById, parsed),
+              : 'Unnamed folder',
           ),
         );
       }
@@ -374,57 +356,14 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
       return;
     }
 
-    await showDialog<void>(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(
-          type == NOTE_TYPE_VIEWLIST
-              ? 'View List Locations'
-              : 'Medley Locations',
+    await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => CollectionLocationsScreen(
+          collection: type == NOTE_TYPE_MEDLEY ? 'medleys' : 'viewlists',
+          hymnId: widget.hymn.hymnId,
+          locations: locations,
         ),
-        content: SizedBox(
-          width: double.maxFinite,
-          child: ListView.separated(
-            shrinkWrap: true,
-            itemCount: locations.length,
-            separatorBuilder: (context, index) => const Divider(height: 1),
-            itemBuilder: (context, index) {
-              final location = locations[index];
-              return ListTile(
-                dense: true,
-                title: Text(location.label),
-                subtitle: Text(location.pathLabel),
-                onTap: () async {
-                  Navigator.pop(dialogContext);
-                  if (!mounted) return;
-                  debugPrint(
-                    'Batch navigation: selectedFolderId=${location.path.isEmpty ? location.docId : location.path.last} '
-                    'collection=${location.collection} docId=${location.docId} '
-                    'path=${location.path.join(' > ')}',
-                  );
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => FolderDocScreen(
-                        collection: location.collection,
-                        docId: location.docId,
-                        docName: location.label,
-                        initialPath: location.path,
-                        initialHighlightHymnId: widget.hymn.hymnId,
-                      ),
-                    ),
-                  );
-                },
-              );
-            },
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Close'),
-          ),
-        ],
       ),
     );
   }
@@ -449,18 +388,6 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
         : parsed.path
               .map((id) => '${parsed.collection}::${parsed.docId}::$id')
               .toList();
-  }
-
-  String _formatStoredFolderPath(
-    List<String> pathIds,
-    Map<String, String> namesById,
-    RelationshipFolderKey parsed,
-  ) {
-    if (pathIds.isEmpty) return 'Root';
-    final labels = pathIds.map((id) {
-      return namesById[id] ?? id.split('::').last;
-    }).toList();
-    return [getCollectionDisplayName(parsed.collection), ...labels].join(' / ');
   }
 
   Future<void> _togglePin() async {
