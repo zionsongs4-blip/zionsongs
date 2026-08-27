@@ -122,6 +122,11 @@ class _HomePageState extends State<HomePage> {
     _appBarLogic = HomeAppBarLogic(
       repository: _repository,
       selectionController: _selectionController,
+      workspaceTabs: () => _workspaceManager.tabs,
+      addSelectedToNewScreen: _onAddSelectedToNewScreen,
+      showScreenSelectorDialog: _showScreenSelectorDialog,
+      openSelectedHymnsToNewTab: _openSelectedHymnsToNewTab,
+      addHymnsToExistingTab: _addHymnsToExistingTab,
     );
 
     _hymnFuture = _loadHymns();
@@ -387,7 +392,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> _openSelectedHymnsToNewTab(List<String> hymnIds) async {
-    if (hymnIds.isEmpty) return;
+    debugPrint('Open flow: creating new tab for ${hymnIds.length} hymns: $hymnIds');
+    if (hymnIds.isEmpty) {
+      debugPrint('Open flow stopped before tab creation: empty hymn list.');
+      return;
+    }
 
     final newTabId = 'standalone_${DateTime.now().millisecondsSinceEpoch}';
     _workspaceManager.openTab(
@@ -404,6 +413,10 @@ class _HomePageState extends State<HomePage> {
         },
       ),
     );
+    debugPrint(
+      'Open flow: new tab registered; active tab '
+      '${_workspaceManager.activeTab?.id}, total tabs ${_workspaceManager.tabs.length}.',
+    );
 
     if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
@@ -411,102 +424,13 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  Future<void> _openSelectedHymnsToExistingTab(List<String> hymnIds) async {
-    if (hymnIds.isEmpty) return;
-
-    final eligibleTabs = _workspaceManager.tabs
-        .where(isEligibleOpenDestinationTab)
-        .toList();
-
-    // If no other screens are open, directly show/create a new screen
-    if (eligibleTabs.isEmpty) {
-      _onAddSelectedToNewScreen(hymnIds);
-      return;
-    }
-
-    // If there are other screens open, show choices
-    final choice = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Open Hymns'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ListTile(
-                leading: const Icon(Icons.playlist_add),
-                title: const Text('Add to Existing Screen'),
-                onTap: () => Navigator.pop(dialogContext, 'existing'),
-              ),
-              ListTile(
-                leading: const Icon(Icons.note_add),
-                title: const Text('Add to New Screen'),
-                onTap: () => Navigator.pop(dialogContext, 'new'),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('CANCEL'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (choice == 'existing') {
-      await _showExistingScreensDialog(hymnIds, eligibleTabs);
-    } else if (choice == 'new') {
-      _onAddSelectedToNewScreen(hymnIds);
-    }
-  }
-
-  Future<void> _showExistingScreensDialog(
-    List<String> hymnIds,
-    List<WorkspaceTab> eligibleTabs,
-  ) async {
-    final chosenTab = await showDialog<WorkspaceTab>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          title: const Text('Add to Existing Screen'),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: eligibleTabs.length,
-              itemBuilder: (context, index) {
-                final tab = eligibleTabs[index];
-                final existingHymnIds = List<String>.from(
-                  tab.arguments['hymnIds'] ?? <String>[],
-                );
-                return ListTile(
-                  title: Text(tab.title),
-                  subtitle: Text('${existingHymnIds.length} hymns'),
-                  onTap: () => Navigator.pop(dialogContext, tab),
-                );
-              },
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(dialogContext),
-              child: const Text('CANCEL'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (chosenTab == null) return;
-    await _addHymnsToExistingTab(chosenTab, hymnIds);
-  }
-
   Future<void> _addHymnsToExistingTab(
     WorkspaceTab chosenTab,
     List<String> hymnIds,
   ) async {
+    debugPrint(
+      'Open flow: updating ${chosenTab.id}/${chosenTab.title} with $hymnIds.',
+    );
     if (hymnIds.isEmpty) return;
 
     final existingIds = List<String>.from(
@@ -544,6 +468,15 @@ class _HomePageState extends State<HomePage> {
         chosenTab.copyWith(arguments: updatedArguments),
       );
       _workspaceManager.activateTab(index);
+      debugPrint(
+        'Open flow: updated and activated ${chosenTab.id}; '
+        'total tabs ${_workspaceManager.tabs.length}.',
+      );
+    } else {
+      debugPrint(
+        'Open flow failed: selected tab ${chosenTab.id} was removed '
+        'before the update.',
+      );
     }
 
     if (!mounted) return;
@@ -818,7 +751,9 @@ class _HomePageState extends State<HomePage> {
           );
         }
         return HymnViewerWidget(
-          key: ValueKey('hymn_${workspace.id}_${initialHymnId}'),
+          key: ValueKey(
+            'hymn_${workspace.id}_${hymnIds.join('|')}_$initialHymnId',
+          ),
           initialHymnId: initialHymnId,
           hymnIds: hymnIds,
         );

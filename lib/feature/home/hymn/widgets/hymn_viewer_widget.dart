@@ -67,6 +67,7 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
   double _zoom = 1.0;
   bool _showHindi = true;
   bool _showMalayalam = true;
+  bool _initialPositionPending = true;
   ValueNotifier<double>? _externalLyricsScaleNotifier;
   UserHymnPref? _currentPreference;
   ViewerMode _displayMode = ViewerMode.displayAll;
@@ -154,10 +155,9 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
     }
 
     final requestedId = widget.initialHymnId;
-    final requestedIndex = effectiveHymnIds.indexOf(requestedId);
-    _currentIndex = requestedIndex >= 0 && requestedIndex < _sourceHymns.length
-        ? requestedIndex
-        : _sourceHymns.indexWhere((hymn) => hymn.hymnId == requestedId);
+    _currentIndex = _sourceHymns.indexWhere(
+      (hymn) => hymn.hymnId == requestedId,
+    );
 
     if (_currentIndex < 0 || _currentIndex >= _sourceHymns.length) {
       _currentIndex = 0;
@@ -202,7 +202,13 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
           alignment: 0.0,
         );
       }
-    } catch (_) {}
+      _initialPositionPending = false;
+    } catch (error, stackTrace) {
+      debugPrint('Hymn viewer initial positioning failed: $error');
+      debugPrint('$stackTrace');
+    } finally {
+      _initialPositionPending = false;
+    }
   }
 
   Future<void> _loadCurrentHymn() async {
@@ -267,7 +273,11 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
   }
 
   void _onScroll() {
-    if (!_scrollController.hasClients || _sourceHymns.isEmpty) return;
+    if (_initialPositionPending ||
+        !_scrollController.hasClients ||
+        _sourceHymns.isEmpty) {
+      return;
+    }
 
     final direction = _scrollController.position.userScrollDirection;
     if (direction == ScrollDirection.reverse && !_appBarHiddenByScroll) {

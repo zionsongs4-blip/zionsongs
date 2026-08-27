@@ -12,6 +12,7 @@ import '../search/search_service.dart';
 import '../hymn/edit_lyrics_page.dart';
 import '../hymn/hymn_models.dart';
 import '../home_page/home_page.dart';
+import '../home_page/workspace_manager.dart';
 import 'theme_service.dart';
 
 /// ===============================================================
@@ -21,10 +22,21 @@ class HomeAppBarLogic {
   HomeAppBarLogic({
     required this.repository,
     required this.selectionController,
+    required this.workspaceTabs,
+    required this.addSelectedToNewScreen,
+    required this.showScreenSelectorDialog,
+    required this.openSelectedHymnsToNewTab,
+    required this.addHymnsToExistingTab,
   });
 
   final HomeRepository repository;
   final HomeSelectionController selectionController;
+  final List<WorkspaceTab> Function() workspaceTabs;
+  final void Function(List<String> hymnIds) addSelectedToNewScreen;
+  final Future<void> Function(List<String> hymnIds) showScreenSelectorDialog;
+  final Future<void> Function(List<String> hymnIds) openSelectedHymnsToNewTab;
+  final Future<void> Function(WorkspaceTab tab, List<String> hymnIds)
+  addHymnsToExistingTab;
 
   List<String> get _selectedIds => selectionController.selectedHymnIds.toList();
 
@@ -171,10 +183,7 @@ class HomeAppBarLogic {
     final ids = List<String>.from(_selectedIds);
 
     try {
-      final homeState = context.findAncestorStateOfType<State<HomePage>>();
-      if (homeState != null) {
-        (homeState as dynamic)._onAddSelectedToNewScreen(ids);
-      }
+      addSelectedToNewScreen(ids);
     } finally {
       if (selectionController.selectedCount > 0) {
         selectionController.clear();
@@ -186,10 +195,7 @@ class HomeAppBarLogic {
     final ids = List<String>.from(_selectedIds);
 
     try {
-      final homeState = context.findAncestorStateOfType<State<HomePage>>();
-      if (homeState != null) {
-        await (homeState as dynamic)._showScreenSelectorDialog(ids);
-      }
+      await showScreenSelectorDialog(ids);
     } finally {
       if (selectionController.selectedCount > 0) {
         selectionController.clear();
@@ -199,19 +205,32 @@ class HomeAppBarLogic {
 
   Future<void> onOpenSelection(BuildContext context) async {
     final ids = List<String>.from(_selectedIds);
-    if (ids.isEmpty) return;
+    debugPrint('Open flow: selected ${ids.length} hymns: $ids');
+    if (ids.isEmpty) {
+      debugPrint('Open flow stopped: no selected hymns.');
+      return;
+    }
 
     try {
-      final homeState = context.findAncestorStateOfType<State<HomePage>>();
-      if (homeState == null) return;
-
-      final allTabs = (homeState as dynamic).activeTabs ?? [];
+      final allTabs = workspaceTabs();
+      debugPrint(
+        'Open flow: existing tabs ${allTabs.length}: '
+        '${allTabs.map((tab) => '${tab.id}/${tab.title}').toList()}',
+      );
       final eligibleTabs = allTabs.where(isEligibleOpenDestinationTab).toList();
+      for (final tab in allTabs) {
+        if (!eligibleTabs.contains(tab)) {
+          debugPrint('Open flow: excluded tab ${tab.id}/${tab.title}.');
+        }
+      }
+      debugPrint('Open flow: eligible tabs ${eligibleTabs.length}.');
 
       String? choice;
       if (eligibleTabs.isEmpty) {
         choice = 'new';
+        debugPrint('Open flow branch: create new screen immediately.');
       } else {
+        debugPrint('Open flow branch: show destination choice dialog.');
         choice = await showDialog<String>(
           context: context,
           builder: (dialogContext) {
@@ -246,8 +265,10 @@ class HomeAppBarLogic {
       if (!context.mounted || choice == null) return;
 
       if (choice == 'new') {
-        await (homeState as dynamic)._openSelectedHymnsToNewTab(ids);
+        debugPrint('Open flow: opening selected hymns on a new screen.');
+        await openSelectedHymnsToNewTab(ids);
       } else if (choice == 'existing') {
+        debugPrint('Open flow: showing ${eligibleTabs.length} existing screens.');
         final selectedTab = await showDialog<dynamic>(
           context: context,
           builder: (dialogContext) {
@@ -280,8 +301,19 @@ class HomeAppBarLogic {
         );
 
         if (selectedTab != null) {
-          await (homeState as dynamic)._addHymnsToExistingTab(selectedTab, ids);
+          debugPrint(
+            'Open flow: adding selected hymns to ${selectedTab.id}/${selectedTab.title}.',
+          );
+          await addHymnsToExistingTab(selectedTab, ids);
         }
+      }
+    } catch (error, stackTrace) {
+      debugPrint('Open flow failed: $error');
+      debugPrint('$stackTrace');
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Unable to open selected hymns: $error')),
+        );
       }
     } finally {
       if (selectionController.selectedCount > 0) {
