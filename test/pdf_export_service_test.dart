@@ -70,7 +70,7 @@ void main() {
       expect(await file.length(), greaterThan(0));
     });
 
-    test('generates a non-empty PDF document from a hymn', () async {
+    test('builds HTML with embedded fonts and intact Indic text', () async {
       final service = PdfExportService();
       final hymns = <LocalHymn>[
         LocalHymn()
@@ -81,16 +81,29 @@ void main() {
           ..englishLyrics = 'English lyrics',
       ];
 
-      final pdfBytes = await service.generateHymnPdf(hymns);
+      final html = await service.buildHymnHtml(hymns);
 
-      expect(pdfBytes.length, greaterThan(0));
-      expect(String.fromCharCodes(pdfBytes.take(4)), equals('%PDF'));
+      expect(html, contains("font-family:Hindi"));
+      expect(html, contains("font-family:Malayalam"));
+      expect(html, contains('हिंदी गीत'));
+      expect(html, contains('മലയാളം പാട്ട്'));
     });
 
     test(
       'save action writes the generated PDF when the picker is unavailable',
       () async {
-        final service = PdfExportService();
+        final service = PdfExportService(
+          htmlConverter: (html, format) async => Uint8List.fromList([
+            0x25,
+            0x50,
+            0x44,
+            0x46,
+            0x2D,
+            0x31,
+            0x2E,
+            0x34,
+          ]),
+        );
         final path = await service.saveHymnPdf(
           hymns: [
             LocalHymn()

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -5,13 +6,23 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
+import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
 
 import '../hymn/hymn_models.dart';
 
+typedef PdfHtmlConverter =
+    Future<Uint8List> Function(String html, PdfPageFormat format);
+
 class PdfExportService {
+  PdfExportService({PdfHtmlConverter? htmlConverter})
+    : _htmlConverter =
+          htmlConverter ??
+          ((html, format) => Printing.convertHtml(html: html, format: format));
+
+  final PdfHtmlConverter _htmlConverter;
+
   static List<LocalHymn> orderHymnsByIds({
     required List<String> hymnIds,
     required List<LocalHymn> hymns,
@@ -139,6 +150,12 @@ class PdfExportService {
   }
 
   Future<Uint8List> generateHymnPdf(List<LocalHymn> hymns) async {
+    final html = await buildHymnHtml(hymns);
+    return _htmlConverter(html, PdfPageFormat.a4);
+  }
+
+  @visibleForTesting
+  Future<String> buildHymnHtml(List<LocalHymn> hymns) async {
     final hindiFontBytes = await _loadAssetBytes(
       'assets/NotoSansDevanagari-Regular.ttf',
     );
@@ -151,140 +168,57 @@ class PdfExportService {
       'assets/NotoSans-Regular.ttf',
     );
 
-    final hindiFont = pw.Font.ttf(ByteData.sublistView(hindiFontBytes));
-    final malayalamFont = pw.Font.ttf(ByteData.sublistView(malayalamFontBytes));
-    final englishFont = pw.Font.ttf(ByteData.sublistView(englishFontBytes));
-    final document = pw.Document(title: 'Zion Hymns', author: 'Zion Songs');
+    final hindiBase64 = base64Encode(hindiFontBytes);
+    final malayalamBase64 = base64Encode(malayalamFontBytes);
+    final englishBase64 = base64Encode(englishFontBytes);
+    final pages = hymns
+        .map((hymn) {
+          final hindi = _removeChords(hymn.hindiLyrics?.trim() ?? '');
+          final malayalam = _removeChords(hymn.malayalamLyrics?.trim() ?? '');
+          final english = _removeChords(hymn.englishLyrics?.trim() ?? '');
+          final secondText = malayalam.isNotEmpty ? malayalam : english;
+          final secondClass = malayalam.isNotEmpty ? 'malayalam' : 'english';
+          final title = hymn.title.trim().isNotEmpty
+              ? hymn.title.trim()
+              : hymn.hymnId;
+          return '''
+<section class="hymn-page">
+  <h1>${_escapeHtml(title.toUpperCase())}</h1>
+  <div class="columns">
+    <div class="language hindi"><h2>Hindi</h2><div class="lyrics">${_escapeHtml(hindi)}</div></div>
+    <div class="divider"></div>
+    <div class="language $secondClass"><h2>${malayalam.isNotEmpty ? 'Malayalam' : 'English'}</h2><div class="lyrics">${_escapeHtml(secondText)}</div></div>
+  </div>
+  <footer>Zion Songs</footer>
+</section>''';
+        })
+        .join('');
 
-    for (final hymn in hymns) {
-      final hindi = _removeChords(hymn.hindiLyrics?.trim() ?? '');
-      final malayalam = _removeChords(hymn.malayalamLyrics?.trim() ?? '');
-      final english = _removeChords(hymn.englishLyrics?.trim() ?? '');
-      final secondLanguage = malayalam.isNotEmpty ? malayalam : english;
-      final secondFont = malayalam.isNotEmpty ? malayalamFont : englishFont;
-      final title = hymn.title.trim().isNotEmpty
-          ? hymn.title.trim()
-          : hymn.hymnId;
+    final html =
+        '''<!doctype html><html><head><meta charset="UTF-8"><style>
+@font-face{font-family:Hindi;src:url(data:font/ttf;base64,$hindiBase64)}
+@font-face{font-family:Malayalam;src:url(data:font/ttf;base64,$malayalamBase64)}
+@font-face{font-family:English;src:url(data:font/ttf;base64,$englishBase64)}
+@page{size:A4;margin:18mm 15mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:English,sans-serif}
+.hymn-page{page-break-after:always}.hymn-page:last-child{page-break-after:auto}h1{text-align:center;font: bold 18pt English;border-bottom:1px solid #222;padding-bottom:3mm}h2{text-align:center;font: bold 11pt English;border-bottom:1px solid #999;padding-bottom:2mm}.columns{display:grid;grid-template-columns:1fr 4% 1fr;gap:4mm}.language{white-space:pre-wrap;font-size:11pt;line-height:1.55;overflow-wrap:break-word}.hindi .lyrics{font-family:Hindi,English,sans-serif}.malayalam .lyrics{font-family:Malayalam,English,sans-serif}.english .lyrics{font-family:English,sans-serif}.divider{width:1px;min-height:200mm;background:#999;justify-self:center}footer{text-align:center;border-top:1px solid #999;margin-top:10mm;padding-top:2mm;color:#555;font-size:8pt}
+</style></head><body>$pages</body></html>''';
 
-      document.addPage(
-        pw.MultiPage(
-          pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.fromLTRB(43, 51, 43, 51),
-          footer: (context) => pw.Container(
-            alignment: pw.Alignment.center,
-            padding: const pw.EdgeInsets.only(top: 6),
-            decoration: const pw.BoxDecoration(
-              border: pw.Border(top: pw.BorderSide(color: PdfColors.grey)),
-            ),
-            child: pw.Text(
-              'Zion Songs',
-              style: pw.TextStyle(
-                font: englishFont,
-                fontSize: 8,
-                color: PdfColors.grey,
-              ),
-            ),
-          ),
-          build: (context) => [
-            pw.Center(
-              child: pw.Text(
-                title.toUpperCase(),
-                style: pw.TextStyle(
-                  font: englishFont,
-                  fontSize: 18,
-                  fontWeight: pw.FontWeight.bold,
-                ),
-              ),
-            ),
-            pw.Divider(color: PdfColors.black),
-            pw.SizedBox(height: 16),
-            pw.Table(
-              columnWidths: const {
-                0: pw.FlexColumnWidth(1),
-                1: pw.FixedColumnWidth(12),
-                2: pw.FlexColumnWidth(1),
-              },
-              children: [
-                pw.TableRow(
-                  children: [
-                    _lyricsColumn(
-                      'Hindi',
-                      hindi,
-                      hindiFont,
-                      fallbackFont: englishFont,
-                      rightPadding: 12,
-                    ),
-                    pw.Container(
-                      width: 1,
-                      color: PdfColors.grey,
-                      constraints: const pw.BoxConstraints(minHeight: 200),
-                    ),
-                    _lyricsColumn(
-                      malayalam.isNotEmpty ? 'Malayalam' : 'English',
-                      secondLanguage,
-                      secondFont,
-                      fallbackFont: englishFont,
-                      leftPadding: 12,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    }
-
-    return document.save();
-  }
-
-  pw.Widget _lyricsColumn(
-    String language,
-    String lyrics,
-    pw.Font font, {
-    pw.Font? fallbackFont,
-    double leftPadding = 0,
-    double rightPadding = 0,
-  }) {
-    return pw.Padding(
-      padding: pw.EdgeInsets.only(left: leftPadding, right: rightPadding),
-      child: pw.Column(
-        crossAxisAlignment: pw.CrossAxisAlignment.stretch,
-        children: [
-          pw.Center(
-            child: pw.Text(
-              language,
-              style: pw.TextStyle(
-                font: font,
-                fontFallback: fallbackFont == null
-                    ? const <pw.Font>[]
-                    : <pw.Font>[fallbackFont],
-                fontSize: 11,
-                fontWeight: pw.FontWeight.bold,
-              ),
-            ),
-          ),
-          pw.Divider(color: PdfColors.grey),
-          pw.Text(
-            lyrics,
-            style: pw.TextStyle(
-              font: font,
-              fontFallback: fallbackFont == null
-                  ? const <pw.Font>[]
-                  : <pw.Font>[fallbackFont],
-              fontSize: 11,
-              lineSpacing: 5,
-            ),
-          ),
-        ],
-      ),
-    );
+    return html;
   }
 
   Future<Uint8List> _loadAssetBytes(String path) async {
     final data = await rootBundle.load(path);
 
     return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+  }
+
+  String _escapeHtml(String text) {
+    return text
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#39;');
   }
 
   // ---------------------------------------------------------------
