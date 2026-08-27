@@ -1,9 +1,11 @@
 import 'dart:math' as math;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 
 import '../feature/home/hymn/app_initializer.dart';
+import '../feature/home/hymn/hymn_master_sync_service.dart';
 import '../feature/home/hymn/hymn_models.dart';
 import '../feature/home/hymn/hymn_section_parser.dart';
 import '../feature/home/hymn/widgets/hymn_viewer_widget.dart';
@@ -28,6 +30,11 @@ List<CollectionLanguageContent> buildCollectionLanguageContent(LocalHymn hymn) {
     entries.add(
       CollectionLanguageContent(label: 'Malayalam', lyrics: malayalamLyrics),
     );
+  }
+
+  final englishLyrics = hymn.englishLyrics?.trim() ?? '';
+  if (englishLyrics.isNotEmpty) {
+    entries.add(CollectionLanguageContent(label: 'English', lyrics: englishLyrics));
   }
 
   if (entries.isEmpty && hymn.originalLyrics.trim().isNotEmpty) {
@@ -134,6 +141,9 @@ class HymnCollectionWorkspace extends StatefulWidget {
 }
 
 class HymnCollectionWorkspaceState extends State<HymnCollectionWorkspace> {
+  static CollectionDisplayMode lastDisplayMode =
+      CollectionDisplayMode.displayChorus;
+
   late List<CollectionTab> _tabs;
   int _activeTabIndex = 0;
 
@@ -152,7 +162,7 @@ class HymnCollectionWorkspaceState extends State<HymnCollectionWorkspace> {
     _tabs = List<CollectionTab>.from(widget.initialTabs);
     if (_tabs.isNotEmpty) {
       _displayMode =
-          _tabs.first.displayMode ?? CollectionDisplayMode.displayChorus;
+          _tabs.first.displayMode ?? HymnCollectionWorkspaceState.lastDisplayMode;
     }
   }
 
@@ -187,10 +197,68 @@ class HymnCollectionWorkspaceState extends State<HymnCollectionWorkspace> {
   Future<List<LocalHymn>> _fetchHymnsForTab(CollectionTab tab) async {
     final allHymns = await AppInitializer.isar.localHymns.where().findAll();
     final hymnMap = {for (final hymn in allHymns) hymn.hymnId: hymn};
-    return tab.hymnIds
-        .where(hymnMap.containsKey)
-        .map((id) => hymnMap[id]!)
+    final hydrated = <String, LocalHymn>{};
+
+    for (final rawId in tab.hymnIds) {
+      final hymnId = rawId.trim();
+      if (hymnId.isEmpty) continue;
+
+      var hymn = hymnMap[hymnId];
+      if (hymn == null) {
+        hymn = await _fetchMissingHymn(hymnId);
+      }
+      if (hymn != null) {
+        hydrated[hymnId] = hymn;
+      }
+    }
+
+    final result = tab.hymnIds
+        .map((id) => hydrated[id.trim()])
+        .whereType<LocalHymn>()
         .toList();
+    debugPrint(
+      'Workspace opened: source=collection folder=${tab.folderName} '
+      'selected=${tab.primaryHymnId} collectionSize=${tab.hymnIds.length} '
+      'primary=${result.any((hymn) => hymn.hymnId == tab.primaryHymnId)} '
+      'secondaryCount=${math.max(0, result.length - 1)} '
+      'displayMode=${tab.displayMode?.label ?? 'Display Chorus'}',
+    );
+    return result;
+  }
+
+  Future<LocalHymn?> _fetchMissingHymn(String hymnId) async {
+    final firestore = FirebaseFirestore.instance;
+    DocumentSnapshot<Map<String, dynamic>>? snapshot;
+    try {
+      snapshot = await firestore.collection('hymns').doc(hymnId).get(
+        const GetOptions(source: Source.cache),
+      );
+    } catch (_) {
+      // Continue to the bounded server fallback after a cache miss.
+    }
+
+    try {
+      if (snapshot == null || !snapshot.exists) {
+        snapshot = await firestore.collection('hymns').doc(hymnId).get(
+          const GetOptions(source: Source.serverAndCache),
+        ).timeout(const Duration(seconds: 3));
+      }
+      if (!snapshot.exists) {
+        debugPrint('Isar lookup result: missing hymn $hymnId');
+        return null;
+      }
+
+      final hymn = HymnMasterSyncService.toLocalHymn(hymnId, snapshot.data());
+      await AppInitializer.isar.writeTxn(
+        () => AppInitializer.isar.localHymns.putByHymnId(hymn),
+      );
+      debugPrint('Isar lookup result: hydrated hymn $hymnId from Firestore');
+      return hymn;
+    } catch (error, stackTrace) {
+      debugPrint('Failed to hydrate hymn $hymnId: $error');
+      debugPrint('$stackTrace');
+      return null;
+    }
   }
 
   void _selectTab(int index) {
@@ -245,6 +313,7 @@ class HymnCollectionWorkspaceState extends State<HymnCollectionWorkspace> {
     setState(() {
       _displayMode = mode;
     });
+    HymnCollectionWorkspaceState.lastDisplayMode = mode;
   }
 
   void _toggleLanguageClosed(String hymnId, String label) {
@@ -413,6 +482,7 @@ class HymnCollectionWorkspaceState extends State<HymnCollectionWorkspace> {
             initialHymnId: primary.hymnId,
             hymnIds: [primary.hymnId],
             initialHymn: primary,
+            mode: ViewerMode.displayAll,
             lyricsScaleNotifier: _lyricsScaleNotifier,
           ),
         ],

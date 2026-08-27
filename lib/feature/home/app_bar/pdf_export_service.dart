@@ -179,27 +179,29 @@ class PdfExportService {
             <div class="title-line"></div>
           </div>
 
-          <div class="lyrics-container">
+          <table class="lyrics-table">
+            <tr>
+              <td class="language-column hindi-column">
+                <div class="language-title">Hindi</div>
+                <div class="language-line"></div>
+                <div class="lyrics hindi-lyrics">
+                  ${_formatLyricsForHtml(hindi)}
+                </div>
+              </td>
 
-            <div class="language-column hindi-column">
-              <div class="language-title">Hindi</div>
-              <div class="language-line"></div>
-              <div class="lyrics hindi-lyrics">
-                ${_formatLyricsForHtml(hindi)}
-              </div>
-            </div>
+              <td class="divider-column">
+                <div class="divider"></div>
+              </td>
 
-            <div class="divider"></div>
-
-            <div class="language-column malayalam-column">
-              <div class="language-title">Malayalam</div>
-              <div class="language-line"></div>
-              <div class="lyrics malayalam-lyrics">
-                ${_formatLyricsForHtml(malayalam)}
-              </div>
-            </div>
-
-          </div>
+              <td class="language-column malayalam-column">
+                <div class="language-title">Malayalam</div>
+                <div class="language-line"></div>
+                <div class="lyrics malayalam-lyrics">
+                  ${_formatLyricsForHtml(malayalam)}
+                </div>
+              </td>
+            </tr>
+          </table>
 
           <div class="footer">
             Zion Songs
@@ -256,7 +258,6 @@ body {
 .hymn-page {
   position: relative;
   width: 100%;
-  min-height: 260mm;
   page-break-after: always;
   padding-bottom: 15mm;
 }
@@ -272,7 +273,7 @@ body {
 .header {
   width: 100%;
   text-align: center;
-  margin-bottom: 10mm;
+  margin-bottom: 8mm;
 }
 
 .title {
@@ -293,29 +294,35 @@ body {
    TWO LANGUAGE COLUMNS
    ------------------------------------------------------------- */
 
-.lyrics-container {
-  display: flex;
-  flex-direction: row;
+.lyrics-table {
   width: 100%;
-  align-items: flex-start;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
 .language-column {
-  width: 49%;
+  width: 48%;
   vertical-align: top;
 }
 
 .hindi-column {
-  padding-right: 5mm;
+  padding-right: 4mm;
 }
 
 .malayalam-column {
-  padding-left: 5mm;
+  padding-left: 4mm;
+}
+
+.divider-column {
+  width: 4%;
+  vertical-align: top;
+  text-align: center;
 }
 
 .divider {
+  display: inline-block;
   width: 1px;
-  min-height: 230mm;
+  min-height: 200mm;
   background: #999;
 }
 
@@ -333,7 +340,7 @@ body {
 
 .language-line {
   border-bottom: 1px solid #999;
-  margin-bottom: 5mm;
+  margin-bottom: 4mm;
 }
 
 /* -------------------------------------------------------------
@@ -361,17 +368,10 @@ body {
    ------------------------------------------------------------- */
 
 .footer {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 2mm;
-
+  margin-top: 10mm;
   border-top: 1px solid #999;
-
   padding-top: 2mm;
-
   text-align: center;
-
   font-family: 'ZionEnglish', sans-serif;
   font-size: 8pt;
   color: #555;
@@ -461,4 +461,3 @@ $hymnPages
         .replaceAll("'", '&#39;');
   }
 }
-

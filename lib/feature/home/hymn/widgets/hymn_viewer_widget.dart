@@ -67,6 +67,7 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
   double _zoom = 1.0;
   bool _showHindi = true;
   bool _showMalayalam = true;
+  bool _showEnglish = true;
   bool _initialPositionPending = true;
   ValueNotifier<double>? _externalLyricsScaleNotifier;
   UserHymnPref? _currentPreference;
@@ -147,6 +148,10 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
         .where(map.containsKey)
         .map((id) => map[id]!)
         .toList();
+
+    if (_sourceHymns.isEmpty && widget.initialHymn != null) {
+      _sourceHymns = [widget.initialHymn!];
+    }
 
     // Prepare keys for each hymn so we can scroll to them later.
     _hymnKeys.clear();
@@ -417,6 +422,7 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
     if (hymn == null) {
       _showHindi = true;
       _showMalayalam = true;
+      _showEnglish = true;
       return;
     }
 
@@ -426,11 +432,13 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
     if (hasHindi && hasMalayalam) {
       _showHindi = true;
       _showMalayalam = true;
+      _showEnglish = _hasLyrics(hymn.englishLyrics);
       return;
     }
 
     _showHindi = hasHindi;
     _showMalayalam = hasMalayalam;
+    _showEnglish = _hasLyrics(hymn.englishLyrics);
   }
 
   String _lyricsForLanguage(LocalHymn hymn, String language) {
@@ -440,6 +448,9 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
 
       case 'original':
         return hymn.originalLyrics;
+
+      case 'english':
+        return hymn.englishLyrics ?? hymn.originalLyrics;
 
       case 'hindi':
       default:
@@ -515,6 +526,8 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
                     setState(() {
                       if (language == 'hindi') {
                         _showHindi = true;
+                      } else if (language == 'english') {
+                        _showEnglish = true;
                       } else {
                         _showMalayalam = true;
                       }
@@ -548,6 +561,8 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
                     setState(() {
                       if (language == 'hindi') {
                         _showHindi = false;
+                      } else if (language == 'english') {
+                        _showEnglish = false;
                       } else {
                         _showMalayalam = false;
                       }
@@ -624,13 +639,22 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
   Widget _buildAdaptiveLyricsContent(LocalHymn hymn, {required double width, required bool isPrimary}) {
     final hasHindi = _hasLyrics(hymn.hindiLyrics);
     final hasMalayalam = _hasLyrics(hymn.malayalamLyrics);
+    final hasEnglish = _hasLyrics(hymn.englishLyrics);
     final showHindi = hasHindi && _showHindi;
     final showMalayalam = hasMalayalam && _showMalayalam;
+    final showEnglish = hasEnglish && _showEnglish;
 
-    if (showHindi && showMalayalam) {
+    final visibleLanguages = <String>[
+      if (showHindi) 'hindi',
+      if (showMalayalam) 'malayalam',
+      if (showEnglish) 'english',
+    ];
+
+    if (visibleLanguages.length >= 2) {
       final hiddenLanguages = <String>[];
       if (hasHindi && !_showHindi) hiddenLanguages.add('hindi');
       if (hasMalayalam && !_showMalayalam) hiddenLanguages.add('malayalam');
+      if (hasEnglish && !_showEnglish) hiddenLanguages.add('english');
 
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -645,13 +669,21 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
                       setState(() {
                         if (language == 'hindi') {
                           _showHindi = true;
+                        } else if (language == 'english') {
+                          _showEnglish = true;
                         } else if (language == 'malayalam') {
                           _showMalayalam = true;
                         }
                       });
                     },
                     icon: const Icon(Icons.unfold_more, size: 18),
-                    label: Text('Show ${language == 'hindi' ? 'Hindi' : 'Malayalam'}'),
+                    label: Text(
+                      'Show ${language == 'hindi'
+                          ? 'Hindi'
+                          : language == 'english'
+                              ? 'English'
+                              : 'Malayalam'}',
+                    ),
                   ),
               ],
             ),
@@ -659,25 +691,18 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Expanded(
-                child: _buildAdaptiveLyricsPanel(
-                  hymn: hymn,
-                  language: 'hindi',
-                  showRestoreButton: false,
-                  showCloseButton: true,
-                  isPrimary: isPrimary,
+              for (var index = 0; index < visibleLanguages.length; index++) ...[
+                if (index > 0) const SizedBox(width: 12),
+                Expanded(
+                  child: _buildAdaptiveLyricsPanel(
+                    hymn: hymn,
+                    language: visibleLanguages[index],
+                    showRestoreButton: false,
+                    showCloseButton: true,
+                    isPrimary: isPrimary,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildAdaptiveLyricsPanel(
-                  hymn: hymn,
-                  language: 'malayalam',
-                  showRestoreButton: false,
-                  showCloseButton: true,
-                  isPrimary: isPrimary,
-                ),
-              ),
+              ],
             ],
           ),
         ],
@@ -704,6 +729,16 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
       );
     }
 
+    if (showEnglish) {
+      return _buildAdaptiveLyricsPanel(
+        hymn: hymn,
+        language: 'english',
+        showRestoreButton: false,
+        showCloseButton: false,
+        isPrimary: isPrimary,
+      );
+    }
+
     if (hasHindi) {
       return _buildAdaptiveLyricsPanel(
         hymn: hymn,
@@ -718,6 +753,16 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
       return _buildAdaptiveLyricsPanel(
         hymn: hymn,
         language: 'malayalam',
+        showRestoreButton: true,
+        showCloseButton: false,
+        isPrimary: isPrimary,
+      );
+    }
+
+    if (hasEnglish) {
+      return _buildAdaptiveLyricsPanel(
+        hymn: hymn,
+        language: 'english',
         showRestoreButton: true,
         showCloseButton: false,
         isPrimary: isPrimary,

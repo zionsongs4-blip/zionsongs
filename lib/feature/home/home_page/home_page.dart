@@ -352,7 +352,7 @@ class _HomePageState extends State<HomePage> {
     return hymn?.title ?? '';
   }
 
-  CollectionDisplayMode _parseCollectionDisplayMode(String? value) {
+  CollectionDisplayMode? _parseCollectionDisplayMode(String? value) {
     switch (value) {
       case 'displayIntro':
         return CollectionDisplayMode.displayIntro;
@@ -363,8 +363,9 @@ class _HomePageState extends State<HomePage> {
       case 'collapseAll':
         return CollectionDisplayMode.collapseAll;
       case 'displayChorus':
-      default:
         return CollectionDisplayMode.displayChorus;
+      default:
+        return null;
     }
   }
 

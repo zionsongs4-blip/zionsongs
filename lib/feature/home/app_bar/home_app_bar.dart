@@ -280,16 +280,6 @@ class _HomeAppBarState extends State<HomeAppBar> {
         onPressed: () => widget.logic.onAddToMedley(context),
       ),
       _buildCompactActionButton(
-        icon: Icons.picture_as_pdf_outlined,
-        label: 'PDF',
-        onPressed: () => widget.logic.onExportPdf(context),
-      ),
-      _buildCompactActionButton(
-        icon: Icons.share_outlined,
-        label: 'Share',
-        onPressed: () => widget.logic.onShareSelection(context),
-      ),
-      _buildCompactActionButton(
         icon: Icons.notifications_none,
         label: 'Notify',
         onPressed: widget.logic.onNotifications,

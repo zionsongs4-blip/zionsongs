@@ -1,0 +1,37 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:zionsongs/screens/hymn_collection_page.dart';
+import 'package:zionsongs/feature/home/hymn/hymn_models.dart';
+
+LocalHymn _hymn(String id) {
+  return LocalHymn()
+    ..hymnId = id
+    ..title = id
+    ..originalLyrics = 'Original $id';
+}
+
+void main() {
+  test('clicked hymn becomes primary while preserving collection order', () {
+    final layout = splitCollectionHymnsForDisplay(
+      hymns: [_hymn('ZS0020'), _hymn('ZS0024'), _hymn('ZS0029')],
+      primaryHymnId: 'ZS0024',
+    );
+
+    expect(layout.primaryHymn.hymnId, 'ZS0024');
+    expect(
+      layout.otherHymns.map((hymn) => hymn.hymnId),
+      ['ZS0020', 'ZS0029'],
+    );
+  });
+
+  test('collection content includes every available language', () {
+    final hymn = _hymn('ZS0024')
+      ..hindiLyrics = 'Hindi lyrics'
+      ..malayalamLyrics = 'Malayalam lyrics'
+      ..englishLyrics = 'English lyrics';
+
+    expect(
+      buildCollectionLanguageContent(hymn).map((content) => content.label),
+      ['Hindi', 'Malayalam', 'English'],
+    );
+  });
+}
