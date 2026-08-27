@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 
 import '../feature/home/hymn/app_initializer.dart';
+import '../feature/home/hymn/hymn_auth_service.dart';
 import '../feature/home/hymn/hymn_models.dart';
 import '../feature/home/hymn/viewlist_medley_models.dart';
 import '../feature/home/repositories/folder_repository.dart';
+import '../utils/folder_navigation_utils.dart';
 import 'hymn_collection_page.dart';
 
 class ViewListScreen extends StatefulWidget {
@@ -296,6 +298,12 @@ class _ViewListScreenState extends State<ViewListScreen> {
       final records = await AppInitializer.isar.medleyFolderRecords
           .where()
           .findAll();
+      records.removeWhere(
+        (record) => !isVisibleRelationshipUser(
+          recordUserId: record.userId,
+          activeUserId: AuthService.userId,
+        ),
+      );
 
       return records
           .map(
@@ -311,6 +319,12 @@ class _ViewListScreenState extends State<ViewListScreen> {
     final records = await AppInitializer.isar.viewListFolderRecords
         .where()
         .findAll();
+    records.removeWhere(
+      (record) => !isVisibleRelationshipUser(
+        recordUserId: record.userId,
+        activeUserId: AuthService.userId,
+      ),
+    );
 
     return records
         .map(
@@ -332,6 +346,12 @@ class _ViewListScreenState extends State<ViewListScreen> {
       final records = await AppInitializer.isar.medleyItemRecords
           .where()
           .findAll();
+      records.removeWhere(
+        (record) => !isVisibleRelationshipUser(
+          recordUserId: record.userId,
+          activeUserId: AuthService.userId,
+        ),
+      );
 
       return records
           .map(
@@ -347,6 +367,12 @@ class _ViewListScreenState extends State<ViewListScreen> {
     final records = await AppInitializer.isar.viewListItemRecords
         .where()
         .findAll();
+    records.removeWhere(
+      (record) => !isVisibleRelationshipUser(
+        recordUserId: record.userId,
+        activeUserId: AuthService.userId,
+      ),
+    );
 
     return records
         .map(

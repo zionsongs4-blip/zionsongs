@@ -8,6 +8,7 @@ import 'package:isar/isar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../feature/home/hymn/app_initializer.dart';
+import '../feature/home/hymn/hymn_auth_service.dart';
 import '../feature/home/hymn/hymn_models.dart';
 import '../feature/home/hymn/viewlist_medley_models.dart';
 import '../feature/home/search/home_search_controller.dart';
@@ -71,10 +72,11 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
   bool _treePaneVisible = true;
   String? _highlightedHymnId;
   Timer? _highlightTimer;
-  
+
   // Scoped search state for View List/Medley hierarchy
   Set<String> _scopedHymnIds = <String>{};
-  List<_ScopedSearchResult> _scopedSearchResults = const <_ScopedSearchResult>[];
+  List<_ScopedSearchResult> _scopedSearchResults =
+      const <_ScopedSearchResult>[];
   Timer? _scopedSearchDebounce;
 
   @override
@@ -83,7 +85,8 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
     collection = widget.collection;
     docId = widget.docId;
     _searchController = TextEditingController();
-    _searchSuggestionsController = SearchService.instance.controller..addListener(_onSearchSuggestionsChanged);
+    _searchSuggestionsController = SearchService.instance.controller
+      ..addListener(_onSearchSuggestionsChanged);
     _contentScrollController.addListener(_persistNavigationState);
     _treeScrollController.addListener(_persistNavigationState);
     _treeHorizontalScrollController.addListener(_persistNavigationState);
@@ -104,6 +107,9 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
     if (widget.initialPath != null && widget.initialPath!.isNotEmpty) {
       _currentPath = List<String>.from(widget.initialPath!);
       _selectedPath = List<String>.from(widget.initialPath!);
+      if (widget.docName != null && widget.docName!.isNotEmpty) {
+        _folderLabels[_pathKey(_currentPath)] = widget.docName!;
+      }
       _breadcrumbs.clear();
       _breadcrumbs.addAll(_buildBreadcrumbs(_currentPath));
       _expandedFolders.add(_pathKey(_currentPath));
@@ -175,24 +181,32 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
           children: [
             Positioned.fill(
               child: _treePaneVisible
-                  ? Builder(builder: (context) {
-                      final screenWidth = MediaQuery.of(context).size.width;
-                      const minContentWidth = 220.0;
-                      const minPaneWidth = 120.0;
-                      final maxPaneAllowed = math.max(0.0, screenWidth - minContentWidth);
-                      final effectivePaneWidth = math.min(math.max(_treePaneWidth, minPaneWidth), math.max(minPaneWidth, maxPaneAllowed));
+                  ? Builder(
+                      builder: (context) {
+                        final screenWidth = MediaQuery.of(context).size.width;
+                        const minContentWidth = 220.0;
+                        const minPaneWidth = 120.0;
+                        final maxPaneAllowed = math.max(
+                          0.0,
+                          screenWidth - minContentWidth,
+                        );
+                        final effectivePaneWidth = math.min(
+                          math.max(_treePaneWidth, minPaneWidth),
+                          math.max(minPaneWidth, maxPaneAllowed),
+                        );
 
-                      return Row(
-                        children: [
-                          SizedBox(
-                            width: effectivePaneWidth,
-                            child: _buildFolderTreePane(),
-                          ),
-                          _buildDivider(),
-                          Expanded(child: _buildContentPane()),
-                        ],
-                      );
-                    })
+                        return Row(
+                          children: [
+                            SizedBox(
+                              width: effectivePaneWidth,
+                              child: _buildFolderTreePane(),
+                            ),
+                            _buildDivider(),
+                            Expanded(child: _buildContentPane()),
+                          ],
+                        );
+                      },
+                    )
                   : _buildContentPane(),
             ),
             if (!_treePaneVisible)
@@ -304,7 +318,10 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
     const minPaneWidth = 120.0;
     const minReported = 320.0;
     final maxPaneAllowed = math.max(0.0, screenWidth - 220.0);
-    final effectivePaneWidth = math.min(math.max(_treePaneWidth, minPaneWidth), math.max(minPaneWidth, maxPaneAllowed));
+    final effectivePaneWidth = math.min(
+      math.max(_treePaneWidth, minPaneWidth),
+      math.max(minPaneWidth, maxPaneAllowed),
+    );
 
     return math.max(effectivePaneWidth, math.max(minReported, contentWidth));
   }
@@ -314,7 +331,10 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
     const minContentWidth = 220.0;
     const minPaneWidth = 120.0;
     final maxPaneAllowed = math.max(0.0, screenWidth - minContentWidth);
-    return math.min(math.max(_treePaneWidth, minPaneWidth), math.max(minPaneWidth, maxPaneAllowed));
+    return math.min(
+      math.max(_treePaneWidth, minPaneWidth),
+      math.max(minPaneWidth, maxPaneAllowed),
+    );
   }
 
   Widget _buildTreeNode({
@@ -460,7 +480,10 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
     const minPaneWidth = 120.0;
     const minContentWidth = 220.0;
-    final maxPaneWidth = (screenWidth - minContentWidth).clamp(minPaneWidth, screenWidth);
+    final maxPaneWidth = (screenWidth - minContentWidth).clamp(
+      minPaneWidth,
+      screenWidth,
+    );
 
     return MouseRegion(
       cursor: SystemMouseCursors.resizeColumn,
@@ -504,8 +527,14 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
   ) async {
     try {
       if (path.isNotEmpty) {
-        final snapshot = await _getFolderDocRef(path).get(const GetOptions(source: Source.cache));
-        final docSnap = snapshot.exists ? snapshot : await _getFolderDocRef(path).get(const GetOptions(source: Source.serverAndCache));
+        final snapshot = await _getFolderDocRef(
+          path,
+        ).get(const GetOptions(source: Source.cache));
+        final docSnap = snapshot.exists
+            ? snapshot
+            : await _getFolderDocRef(
+                path,
+              ).get(const GetOptions(source: Source.serverAndCache));
         if (docSnap.exists) {
           final data = docSnap.data()!;
           final hymnIdsMap = _safeStringKeyedMap(data['hymnIds'], 'hymnIds');
@@ -513,10 +542,16 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
         }
       } else {
         if (docId != 'root') {
-          final docRef = FirebaseFirestore.instance.collection(collection).doc(docId);
-          var docSnap = await docRef.get(const GetOptions(source: Source.cache));
+          final docRef = FirebaseFirestore.instance
+              .collection(collection)
+              .doc(docId);
+          var docSnap = await docRef.get(
+            const GetOptions(source: Source.cache),
+          );
           if (!docSnap.exists) {
-            docSnap = await docRef.get(const GetOptions(source: Source.serverAndCache));
+            docSnap = await docRef.get(
+              const GetOptions(source: Source.serverAndCache),
+            );
           }
           if (docSnap.exists) {
             final data = docSnap.data()!;
@@ -526,13 +561,22 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
         }
       }
 
-      final childSnapshot = await _getFolderCollectionRef(path).get(const GetOptions(source: Source.cache));
-      final docs = childSnapshot.docs.isNotEmpty ? childSnapshot.docs : (await _getFolderCollectionRef(path).get(const GetOptions(source: Source.serverAndCache))).docs;
-      
+      final childSnapshot = await _getFolderCollectionRef(
+        path,
+      ).get(const GetOptions(source: Source.cache));
+      final docs = childSnapshot.docs.isNotEmpty
+          ? childSnapshot.docs
+          : (await _getFolderCollectionRef(
+              path,
+            ).get(const GetOptions(source: Source.serverAndCache))).docs;
+
       for (final childDoc in docs) {
         final childPath = [...path, childDoc.id];
         final childData = childDoc.data();
-        final childHymnIds = _safeStringKeyedMap(childData['hymnIds'], 'hymnIds');
+        final childHymnIds = _safeStringKeyedMap(
+          childData['hymnIds'],
+          'hymnIds',
+        );
         collected.addAll(childHymnIds.keys);
 
         await _collectHymnIdsRecursive(childPath, collected);
@@ -552,22 +596,25 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
 
     final normalizedQuery = query.toLowerCase().trim();
     final isar = AppInitializer.isar;
-    
+
     try {
       final allHymns = await isar.localHymns.where().findAll();
       final results = <_ScopedSearchResult>[];
-      
+
       for (final hymn in allHymns) {
-        if (_scopedHymnIds.isNotEmpty && !_scopedHymnIds.contains(hymn.hymnId)) {
+        if (_scopedHymnIds.isNotEmpty &&
+            !_scopedHymnIds.contains(hymn.hymnId)) {
           continue;
         }
-        
+
         if (_matchesScopedSearch(hymn, normalizedQuery)) {
-          results.add(_ScopedSearchResult(
-            hymnId: hymn.hymnId,
-            title: hymn.title,
-            suggestion: _getSuggestionFromHymn(hymn, normalizedQuery),
-          ));
+          results.add(
+            _ScopedSearchResult(
+              hymnId: hymn.hymnId,
+              title: hymn.title,
+              suggestion: _getSuggestionFromHymn(hymn, normalizedQuery),
+            ),
+          );
         }
       }
 
@@ -581,11 +628,16 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
 
   bool _matchesScopedSearch(LocalHymn hymn, String normalizedQuery) {
     if (hymn.title.toLowerCase().contains(normalizedQuery)) return true;
-    if (hymn.originalLyrics.toLowerCase().contains(normalizedQuery)) return true;
-    if ((hymn.englishLyrics ?? '').toLowerCase().contains(normalizedQuery)) return true;
-    if ((hymn.hindiLyrics ?? '').toLowerCase().contains(normalizedQuery)) return true;
-    if ((hymn.malayalamLyrics ?? '').toLowerCase().contains(normalizedQuery)) return true;
-    if ((hymn.searchText ?? '').toLowerCase().contains(normalizedQuery)) return true;
+    if (hymn.originalLyrics.toLowerCase().contains(normalizedQuery))
+      return true;
+    if ((hymn.englishLyrics ?? '').toLowerCase().contains(normalizedQuery))
+      return true;
+    if ((hymn.hindiLyrics ?? '').toLowerCase().contains(normalizedQuery))
+      return true;
+    if ((hymn.malayalamLyrics ?? '').toLowerCase().contains(normalizedQuery))
+      return true;
+    if ((hymn.searchText ?? '').toLowerCase().contains(normalizedQuery))
+      return true;
     return false;
   }
 
@@ -593,7 +645,7 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
     if (hymn.title.toLowerCase().contains(query)) {
       return hymn.title;
     }
-    
+
     final lyricsToSearch = [
       hymn.originalLyrics,
       hymn.englishLyrics ?? '',
@@ -654,9 +706,9 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
         .toList();
     final showSuggestions =
         _searchText.trim().isNotEmpty &&
-            !_showSearchResultList &&
-            _selectedSearchHymn == null &&
-            scopedSuggestions.isNotEmpty;
+        !_showSearchResultList &&
+        _selectedSearchHymn == null &&
+        scopedSuggestions.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 0, 12, 8),
@@ -692,12 +744,17 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
                 child: ListView.separated(
                   shrinkWrap: true,
                   itemCount: scopedSuggestions.length,
-                  separatorBuilder: (context, index) => const Divider(height: 1),
+                  separatorBuilder: (context, index) =>
+                      const Divider(height: 1),
                   itemBuilder: (context, index) {
                     final suggestion = scopedSuggestions[index];
                     return ListTile(
                       dense: true,
-                      title: Text(suggestion, maxLines: 2, overflow: TextOverflow.ellipsis),
+                      title: Text(
+                        suggestion,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                       onTap: () {
                         setState(() {
                           _showSearchResultList = true;
@@ -728,7 +785,9 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
                     final result = _scopedSearchResults[index];
                     return ListTile(
                       dense: true,
-                      title: Text(result.title.isNotEmpty ? result.title : result.hymnId),
+                      title: Text(
+                        result.title.isNotEmpty ? result.title : result.hymnId,
+                      ),
                       onTap: () => _selectScopedSearchResult(result),
                     );
                   },
@@ -769,20 +828,54 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
     });
   }
 
-  Future<List<_CollectionSearchResult>> _searchLocationsForHymnScoped(String hymnId) async {
+  Future<List<_CollectionSearchResult>> _searchLocationsForHymnScoped(
+    String hymnId,
+  ) async {
     final folders = <_SearchFolderRecord>[];
     final items = <_SearchItemRecord>[];
-    
+
     if (collection == 'viewlists') {
-      final folderRecords = await AppInitializer.isar.viewListFolderRecords.where().findAll();
-      final itemRecords = await AppInitializer.isar.viewListItemRecords.where().findAll();
-      folders.addAll(folderRecords.map((r) => _SearchFolderRecord(folderId: r.folderId, name: r.name, parentId: r.parentId)));
-      items.addAll(itemRecords.map((r) => _SearchItemRecord(folderId: r.folderId, hymnId: r.hymnId)));
+      final folderRecords = await AppInitializer.isar.viewListFolderRecords
+          .where()
+          .findAll();
+      final itemRecords = await AppInitializer.isar.viewListItemRecords
+          .where()
+          .findAll();
+      folders.addAll(
+        folderRecords.map(
+          (r) => _SearchFolderRecord(
+            folderId: r.folderId,
+            name: r.name,
+            parentId: r.parentId,
+          ),
+        ),
+      );
+      items.addAll(
+        itemRecords.map(
+          (r) => _SearchItemRecord(folderId: r.folderId, hymnId: r.hymnId),
+        ),
+      );
     } else {
-      final folderRecords = await AppInitializer.isar.medleyFolderRecords.where().findAll();
-      final itemRecords = await AppInitializer.isar.medleyItemRecords.where().findAll();
-      folders.addAll(folderRecords.map((r) => _SearchFolderRecord(folderId: r.folderId, name: r.name, parentId: r.parentId)));
-      items.addAll(itemRecords.map((r) => _SearchItemRecord(folderId: r.folderId, hymnId: r.hymnId)));
+      final folderRecords = await AppInitializer.isar.medleyFolderRecords
+          .where()
+          .findAll();
+      final itemRecords = await AppInitializer.isar.medleyItemRecords
+          .where()
+          .findAll();
+      folders.addAll(
+        folderRecords.map(
+          (r) => _SearchFolderRecord(
+            folderId: r.folderId,
+            name: r.name,
+            parentId: r.parentId,
+          ),
+        ),
+      );
+      items.addAll(
+        itemRecords.map(
+          (r) => _SearchItemRecord(folderId: r.folderId, hymnId: r.hymnId),
+        ),
+      );
     }
 
     final folderMap = <String, _SearchFolderRecord>{
@@ -790,14 +883,19 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
         if (_belongsToCurrentCollection(folder.folderId))
           folder.folderId: folder,
     };
-    
-    final collectionItems = items.where((item) => _belongsToCurrentCollection(item.folderId)).toList();
+
+    final collectionItems = items
+        .where((item) => _belongsToCurrentCollection(item.folderId))
+        .toList();
     final hymnIdsByFolder = <String, List<String>>{};
     for (final item in collectionItems) {
       hymnIdsByFolder.putIfAbsent(item.folderId, () => []).add(item.hymnId);
     }
 
-    final hymn = await AppInitializer.isar.localHymns.filter().hymnIdEqualTo(hymnId).findFirst();
+    final hymn = await AppInitializer.isar.localHymns
+        .filter()
+        .hymnIdEqualTo(hymnId)
+        .findFirst();
     if (hymn == null) return const <_CollectionSearchResult>[];
 
     final results = <_CollectionSearchResult>[];
@@ -852,10 +950,9 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
     return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
       stream: _getFolderCollectionRef(currentPath).snapshots(),
       builder: (context, folderSnapshot) {
-        if (folderSnapshot.hasError)
-          return Center(child: Text('Error: ${folderSnapshot.error}'));
-        if (!folderSnapshot.hasData)
-          return const Center(child: CircularProgressIndicator());
+        if (folderSnapshot.hasError || !folderSnapshot.hasData) {
+          return _buildOfflineFolderContent();
+        }
 
         final childFolders = folderSnapshot.data!.docs;
         return StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
@@ -863,8 +960,10 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
               ? const Stream<DocumentSnapshot<Map<String, dynamic>>>.empty()
               : _getFolderDocRef(currentPath).snapshots(),
           builder: (context, folderDocSnapshot) {
-            if (folderDocSnapshot.hasError)
-              return Center(child: Text('Error: ${folderDocSnapshot.error}'));
+            if (folderDocSnapshot.hasError ||
+                (!folderDocSnapshot.hasData && currentPath.isNotEmpty)) {
+              return _buildOfflineFolderContent();
+            }
             if (folderDocSnapshot.hasData &&
                 currentPath.isNotEmpty &&
                 !folderDocSnapshot.data!.exists) {
@@ -929,6 +1028,97 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
         );
       },
     );
+  }
+
+  Widget _buildOfflineFolderContent() {
+    return FutureBuilder<List<String>>(
+      future: _loadLocalFolderHymnIds(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (snapshot.hasError) {
+          return Center(
+            child: Text('Unable to load local folder: ${snapshot.error}'),
+          );
+        }
+
+        final hymnIds = snapshot.data ?? const <String>[];
+        return ListView(
+          controller: _contentScrollController,
+          padding: EdgeInsets.fromLTRB(
+            12,
+            0,
+            12,
+            MediaQuery.of(context).viewInsets.bottom +
+                kMinInteractiveDimension * 4,
+          ),
+          children: [
+            const SizedBox(height: 8),
+            Text(
+              '${_buildCurrentTitle()} (${hymnIds.length})',
+              style: const TextStyle(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+            _buildSongsSection(hymnIds),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<List<String>> _loadLocalFolderHymnIds() async {
+    final folderId = buildRelationshipFolderKey(
+      collection,
+      docId,
+      _currentPath,
+    );
+    final ids = <String>[];
+
+    if (collection == 'medleys') {
+      final records = await AppInitializer.isar.medleyItemRecords
+          .where()
+          .findAll();
+      records.removeWhere(
+        (record) =>
+            record.folderId != folderId ||
+            !isVisibleRelationshipUser(
+              recordUserId: record.userId,
+              activeUserId: AuthService.userId,
+            ),
+      );
+      records.sort(
+        (a, b) => a.sortOrder != b.sortOrder
+            ? a.sortOrder.compareTo(b.sortOrder)
+            : a.hymnId.compareTo(b.hymnId),
+      );
+      ids.addAll(records.map((record) => record.hymnId));
+    } else {
+      final records = await AppInitializer.isar.viewListItemRecords
+          .where()
+          .findAll();
+      records.removeWhere(
+        (record) =>
+            record.folderId != folderId ||
+            !isVisibleRelationshipUser(
+              recordUserId: record.userId,
+              activeUserId: AuthService.userId,
+            ),
+      );
+      records.sort(
+        (a, b) => a.sortOrder != b.sortOrder
+            ? a.sortOrder.compareTo(b.sortOrder)
+            : a.hymnId.compareTo(b.hymnId),
+      );
+      ids.addAll(records.map((record) => record.hymnId));
+    }
+
+    final uniqueIds = uniqueIdsPreservingOrder(ids);
+    debugPrint(
+      'Offline folder load: collection=$collection docId=$docId '
+      'path=${_currentPath.join(' > ')} songCount=${uniqueIds.length}',
+    );
+    return uniqueIds;
   }
 
   Widget _buildSongsSection(List<String> hymnIds) {
@@ -1067,12 +1257,7 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
             final updated = List<String>.from(hymnIds);
             final item = updated.removeAt(oldIndex);
             updated.insert(newIndex, item);
-            await _repo.reorderHymns(
-              collection,
-              docId,
-              _currentPath,
-              updated,
-            );
+            await _repo.reorderHymns(collection, docId, _currentPath, updated);
           },
           itemBuilder: (context, index) {
             final item = items[index];
@@ -1092,10 +1277,7 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
               child: Column(
                 children: [
                   ListTile(
-                    key: _hymnItemKeys.putIfAbsent(
-                      item.id,
-                      () => GlobalKey(),
-                    ),
+                    key: _hymnItemKeys.putIfAbsent(item.id, () => GlobalKey()),
                     leading: SizedBox(
                       width: 48,
                       child: Text(
@@ -1269,16 +1451,30 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
     );
   }
 
-  Future<void> _openHymnInWorkspace(String hymnId, [List<String>? hymnIds]) async {
-    List<String> effectiveHymnIds = hymnIds != null ? List<String>.from(hymnIds) : [];
-    
+  Future<void> _openHymnInWorkspace(
+    String hymnId, [
+    List<String>? hymnIds,
+  ]) async {
+    List<String> effectiveHymnIds = hymnIds != null
+        ? List<String>.from(hymnIds)
+        : [];
+
+    final localRelationshipHymnIds = await _loadLocalRelationshipHymnIds();
+    if (localRelationshipHymnIds.contains(hymnId)) {
+      effectiveHymnIds = localRelationshipHymnIds;
+    }
+
     if (effectiveHymnIds.isEmpty) {
       try {
         if (_currentPath.isNotEmpty) {
           final folderDocRef = _getFolderDocRef(_currentPath);
-          var folderDoc = await folderDocRef.get(const GetOptions(source: Source.cache));
+          var folderDoc = await folderDocRef.get(
+            const GetOptions(source: Source.cache),
+          );
           if (!folderDoc.exists) {
-            folderDoc = await folderDocRef.get(const GetOptions(source: Source.serverAndCache));
+            folderDoc = await folderDocRef.get(
+              const GetOptions(source: Source.serverAndCache),
+            );
           }
           if (folderDoc.exists) {
             final data = folderDoc.data()!;
@@ -1287,10 +1483,16 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
             effectiveHymnIds = _getOrderedHymnIds(hymnIdsMap, hymnOrder);
           }
         } else if (docId != 'root') {
-          final docRef = FirebaseFirestore.instance.collection(collection).doc(docId);
-          var docSnap = await docRef.get(const GetOptions(source: Source.cache));
+          final docRef = FirebaseFirestore.instance
+              .collection(collection)
+              .doc(docId);
+          var docSnap = await docRef.get(
+            const GetOptions(source: Source.cache),
+          );
           if (!docSnap.exists) {
-            docSnap = await docRef.get(const GetOptions(source: Source.serverAndCache));
+            docSnap = await docRef.get(
+              const GetOptions(source: Source.serverAndCache),
+            );
           }
           if (docSnap.exists) {
             final data = docSnap.data()!;
@@ -1299,7 +1501,13 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
             effectiveHymnIds = _getOrderedHymnIds(hymnIdsMap, hymnOrder);
           }
         }
-      } catch (_) {}
+      } catch (error, stackTrace) {
+        debugPrint(
+          'Collection membership fallback failed: collection=$collection '
+          'docId=$docId path=${_currentPath.join(' > ')} error=$error',
+        );
+        debugPrint('$stackTrace');
+      }
     }
 
     if (effectiveHymnIds.isEmpty) {
@@ -1310,7 +1518,7 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
     }
 
     if (widget.onOpenCollection != null) {
-      widget.onOpenCollection!(hymnId, effectiveHymnIds, null);
+      widget.onOpenCollection!(hymnId, effectiveHymnIds, _buildCurrentTitle());
       return;
     }
 
@@ -1319,6 +1527,7 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
       (homeState as dynamic)._openCollectionHymnWorkspace(
         hymnId,
         effectiveHymnIds,
+        folderName: _buildCurrentTitle(),
       );
       return;
     }
@@ -1328,7 +1537,8 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
       State? found;
       void visitor(Element element) {
         if (found != null) return;
-        if (element is StatefulElement && element.state.runtimeType.toString().contains('_HomePageState')) {
+        if (element is StatefulElement &&
+            element.state.runtimeType.toString().contains('_HomePageState')) {
           found = element.state;
           return;
         }
@@ -1341,12 +1551,64 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
         (found as dynamic)._openCollectionHymnWorkspace(
           hymnId,
           effectiveHymnIds,
+          folderName: _buildCurrentTitle(),
         );
         return;
       }
-    } catch (_) {}
+    } catch (error, stackTrace) {
+      debugPrint('Collection workspace lookup failed: error=$error');
+      debugPrint('$stackTrace');
+    }
 
-    widget.onOpenCollection?.call(hymnId, effectiveHymnIds, null);
+    widget.onOpenCollection?.call(
+      hymnId,
+      effectiveHymnIds,
+      _buildCurrentTitle(),
+    );
+  }
+
+  Future<List<String>> _loadLocalRelationshipHymnIds() async {
+    final folderId = buildRelationshipFolderKey(
+      collection,
+      docId,
+      _currentPath,
+    );
+
+    if (collection == 'medleys') {
+      final records = await AppInitializer.isar.medleyItemRecords
+          .where()
+          .findAll();
+      records
+        ..removeWhere(
+          (record) => !isVisibleRelationshipUser(
+            recordUserId: record.userId,
+            activeUserId: AuthService.userId,
+          ),
+        )
+        ..removeWhere((record) => record.folderId != folderId)
+        ..sort((a, b) {
+          final order = a.sortOrder.compareTo(b.sortOrder);
+          return order != 0 ? order : a.hymnId.compareTo(b.hymnId);
+        });
+      return records.map((record) => record.hymnId).toList();
+    }
+
+    final records = await AppInitializer.isar.viewListItemRecords
+        .where()
+        .findAll();
+    records
+      ..removeWhere(
+        (record) => !isVisibleRelationshipUser(
+          recordUserId: record.userId,
+          activeUserId: AuthService.userId,
+        ),
+      )
+      ..removeWhere((record) => record.folderId != folderId)
+      ..sort((a, b) {
+        final order = a.sortOrder.compareTo(b.sortOrder);
+        return order != 0 ? order : a.hymnId.compareTo(b.hymnId);
+      });
+    return records.map((record) => record.hymnId).toList();
   }
 
   Future<void> _handleFolderAction(String action, List<String> path) async {
@@ -1814,14 +2076,17 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
                               return;
                             }
 
-                            final folderDoc = await _getFolderDocRef(path).get();
+                            final folderDoc = await _getFolderDocRef(
+                              path,
+                            ).get();
                             final hymnIds = _safeStringKeyedMap(
                               folderDoc.data()?['hymnIds'],
                               'hymnIds',
                             );
                             if (hymnIds.containsKey(selected.hymnId)) {
                               setDialogState(() {
-                                message = 'This hymn is already in this folder.';
+                                message =
+                                    'This hymn is already in this folder.';
                               });
                               return;
                             }
@@ -1882,14 +2147,17 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
                             final serial = _parseSerialFromHymn(hymn) ?? '';
                             return InkWell(
                               onTap: () async {
-                                final folderDoc = await _getFolderDocRef(path).get();
+                                final folderDoc = await _getFolderDocRef(
+                                  path,
+                                ).get();
                                 final hymnIds = _safeStringKeyedMap(
                                   folderDoc.data()?['hymnIds'],
                                   'hymnIds',
                                 );
                                 if (hymnIds.containsKey(hymn.hymnId)) {
                                   setDialogState(() {
-                                    message = 'This hymn is already in this folder.';
+                                    message =
+                                        'This hymn is already in this folder.';
                                   });
                                   return;
                                 }
@@ -2098,11 +2366,18 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
       }
 
       final savedPath = List<String>.from(decoded['path'] ?? const <String>[]);
-      final savedExpanded = List<String>.from(decoded['expandedPaths'] ?? const <String>[]);
-      final savedSelectedPath = List<String>.from(decoded['selectedPath'] ?? const <String>[]);
-      final savedContentOffset = (decoded['contentOffset'] as num?)?.toDouble() ?? 0.0;
-      final savedTreeOffset = (decoded['treeOffset'] as num?)?.toDouble() ?? 0.0;
-      final savedTreeHorizontalOffset = (decoded['treeHorizontalOffset'] as num?)?.toDouble() ?? 0.0;
+      final savedExpanded = List<String>.from(
+        decoded['expandedPaths'] ?? const <String>[],
+      );
+      final savedSelectedPath = List<String>.from(
+        decoded['selectedPath'] ?? const <String>[],
+      );
+      final savedContentOffset =
+          (decoded['contentOffset'] as num?)?.toDouble() ?? 0.0;
+      final savedTreeOffset =
+          (decoded['treeOffset'] as num?)?.toDouble() ?? 0.0;
+      final savedTreeHorizontalOffset =
+          (decoded['treeHorizontalOffset'] as num?)?.toDouble() ?? 0.0;
 
       if (savedPath.isNotEmpty) {
         final isValid = await _pathExists(savedPath);
@@ -2115,7 +2390,9 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
       if (!mounted) return;
       setState(() {
         _currentPath = savedPath;
-        _selectedPath = savedSelectedPath.isNotEmpty ? savedSelectedPath : savedPath;
+        _selectedPath = savedSelectedPath.isNotEmpty
+            ? savedSelectedPath
+            : savedPath;
         _expandedFolders
           ..clear()
           ..add(_pathKey(const <String>[]));
@@ -2137,13 +2414,28 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) return;
         if (_contentScrollController.hasClients) {
-          _contentScrollController.jumpTo(savedContentOffset.clamp(0.0, _contentScrollController.position.maxScrollExtent));
+          _contentScrollController.jumpTo(
+            savedContentOffset.clamp(
+              0.0,
+              _contentScrollController.position.maxScrollExtent,
+            ),
+          );
         }
         if (_treeScrollController.hasClients) {
-          _treeScrollController.jumpTo(savedTreeOffset.clamp(0.0, _treeScrollController.position.maxScrollExtent));
+          _treeScrollController.jumpTo(
+            savedTreeOffset.clamp(
+              0.0,
+              _treeScrollController.position.maxScrollExtent,
+            ),
+          );
         }
         if (_treeHorizontalScrollController.hasClients) {
-          _treeHorizontalScrollController.jumpTo(savedTreeHorizontalOffset.clamp(0.0, _treeHorizontalScrollController.position.maxScrollExtent));
+          _treeHorizontalScrollController.jumpTo(
+            savedTreeHorizontalOffset.clamp(
+              0.0,
+              _treeHorizontalScrollController.position.maxScrollExtent,
+            ),
+          );
         }
       });
     } catch (_) {
@@ -2155,7 +2447,9 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
     if (path.isEmpty) return true;
     var currentPath = <String>[];
     for (final folderId in path) {
-      final snapshot = await _getFolderCollectionRef(currentPath).doc(folderId).get();
+      final snapshot = await _getFolderCollectionRef(
+        currentPath,
+      ).doc(folderId).get();
       if (!snapshot.exists) {
         return false;
       }
@@ -2169,10 +2463,18 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
     final state = {
       'path': _currentPath,
       'selectedPath': _selectedPath,
-      'expandedPaths': _expandedFolders.where((item) => item.isNotEmpty).toList(),
-      'contentOffset': _contentScrollController.hasClients ? _contentScrollController.offset : 0.0,
-      'treeOffset': _treeScrollController.hasClients ? _treeScrollController.offset : 0.0,
-      'treeHorizontalOffset': _treeHorizontalScrollController.hasClients ? _treeHorizontalScrollController.offset : 0.0,
+      'expandedPaths': _expandedFolders
+          .where((item) => item.isNotEmpty)
+          .toList(),
+      'contentOffset': _contentScrollController.hasClients
+          ? _contentScrollController.offset
+          : 0.0,
+      'treeOffset': _treeScrollController.hasClients
+          ? _treeScrollController.offset
+          : 0.0,
+      'treeHorizontalOffset': _treeHorizontalScrollController.hasClients
+          ? _treeHorizontalScrollController.offset
+          : 0.0,
     };
     await prefs.setString(_storageKey(), jsonEncode(state));
   }

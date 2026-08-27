@@ -1,9 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 import 'firebase_options.dart';
 import 'feature/access_control/login_screen.dart';
+import 'feature/home/hymn/hymn_auth_service.dart';
 import 'feature/home/hymn/app_initializer.dart';
 import 'feature/home/app_bar/theme_service.dart';
 import 'feature/home/home_page/home_page.dart';
@@ -103,6 +106,9 @@ class _MyAppState extends State<MyApp> {
           builder: (context, snapshot) {
             final user = snapshot.data ?? FirebaseAuth.instance.currentUser;
             final isAuthenticated = user != null;
+            if (user != null && AuthService.userId != user.uid) {
+              unawaited(AuthService.init(user.uid));
+            }
 
             return MaterialApp(
               debugShowCheckedModeBanner: false,

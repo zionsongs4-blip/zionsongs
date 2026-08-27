@@ -1,6 +1,4 @@
 import 'dart:io';
-import 'dart:typed_data';
-
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zionsongs/feature/home/app_bar/pdf_export_service.dart';
@@ -71,6 +69,46 @@ void main() {
       expect(await file.exists(), isTrue);
       expect(await file.length(), greaterThan(0));
     });
+
+    test('generates a non-empty PDF document from a hymn', () async {
+      final service = PdfExportService();
+      final hymns = <LocalHymn>[
+        LocalHymn()
+          ..hymnId = 'h1'
+          ..title = 'Test hymn'
+          ..hindiLyrics = 'हिंदी गीत'
+          ..malayalamLyrics = 'മലയാളം പാട്ട്'
+          ..englishLyrics = 'English lyrics',
+      ];
+
+      final pdfBytes = await service.generateHymnPdf(hymns);
+
+      expect(pdfBytes.length, greaterThan(0));
+      expect(String.fromCharCodes(pdfBytes.take(4)), equals('%PDF'));
+    });
+
+    test(
+      'save action writes the generated PDF when the picker is unavailable',
+      () async {
+        final service = PdfExportService();
+        final path = await service.saveHymnPdf(
+          hymns: [
+            LocalHymn()
+              ..hymnId = 'h1'
+              ..title = 'Saved hymn'
+              ..hindiLyrics = 'हिंदी गीत'
+              ..malayalamLyrics = 'മലയാളം പാട്ട്',
+          ],
+        );
+
+        final file = File(path);
+        expect(await file.exists(), isTrue);
+        expect(
+          String.fromCharCodes((await file.readAsBytes()).take(4)),
+          equals('%PDF'),
+        );
+      },
+    );
 
     test(
       'writes share PDFs to a temporary directory so they can be opened by the system share sheet',

@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:zionsongs/screens/hymn_collection_page.dart';
 import 'package:zionsongs/feature/home/hymn/hymn_models.dart';
+import 'package:zionsongs/utils/folder_navigation_utils.dart';
 
 LocalHymn _hymn(String id) {
   return LocalHymn()
@@ -17,10 +18,7 @@ void main() {
     );
 
     expect(layout.primaryHymn.hymnId, 'ZS0024');
-    expect(
-      layout.otherHymns.map((hymn) => hymn.hymnId),
-      ['ZS0020', 'ZS0029'],
-    );
+    expect(layout.otherHymns.map((hymn) => hymn.hymnId), ['ZS0020', 'ZS0029']);
   });
 
   test('collection content includes every available language', () {
@@ -33,5 +31,29 @@ void main() {
       buildCollectionLanguageContent(hymn).map((content) => content.label),
       ['Hindi', 'Malayalam', 'English'],
     );
+  });
+
+  test('relationship ownership includes legacy local records after auth', () {
+    expect(
+      isVisibleRelationshipUser(
+        recordUserId: 'local-user',
+        activeUserId: 'signed-in-user',
+      ),
+      isTrue,
+    );
+    expect(
+      isVisibleRelationshipUser(
+        recordUserId: 'other-user',
+        activeUserId: 'signed-in-user',
+      ),
+      isFalse,
+    );
+  });
+
+  test('batch folder IDs are deduplicated without changing order', () {
+    expect(uniqueIdsPreservingOrder(['folder-a', 'folder-b', 'folder-a']), [
+      'folder-a',
+      'folder-b',
+    ]);
   });
 }

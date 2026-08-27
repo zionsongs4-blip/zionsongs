@@ -109,8 +109,14 @@ class _HymnInfoBarState extends State<HymnInfoBar> {
       }
 
       _detectedKey = HymnTransposeLogic.detectKey(_hymn?.originalLyrics ?? "");
+      debugPrint(
+        'Hymn loaded: title=${_hymn?.title} hymnId=${_hymn?.hymnId} '
+        'isarId=${_hymn?.id} activeId=$id',
+      );
       if (mounted) setState(() {});
-    } catch (_) {
+    } catch (error, stackTrace) {
+      debugPrint('Hymn load failed: hymnId=$id error=$error');
+      debugPrint('$stackTrace');
       if (mounted) {
         setState(() {
           _hymn = null;
@@ -140,7 +146,11 @@ class _HymnInfoBarState extends State<HymnInfoBar> {
         .userIdEqualTo(AuthService.userId)
         .syncStatusEqualTo(SyncStatus.error)
         .count();
-    if (mounted) setState(() {_noteCount = count; _errorCount = errors;});
+    if (mounted)
+      setState(() {
+        _noteCount = count;
+        _errorCount = errors;
+      });
   }
 
   void _openEditPage() {
@@ -164,13 +174,14 @@ class _HymnInfoBarState extends State<HymnInfoBar> {
       return const Center(child: CircularProgressIndicator());
     }
 
-    final effectivePref = _pref ??
-    (UserHymnPref()
-      ..hymnId = _activeHymnId
-      ..userId = AuthService.userId
-      ..transposeOffset = 0
-      ..preferFlats = false
-      ..manualKey = _detectedKey ?? 'C');
+    final effectivePref =
+        _pref ??
+        (UserHymnPref()
+          ..hymnId = _activeHymnId
+          ..userId = AuthService.userId
+          ..transposeOffset = 0
+          ..preferFlats = false
+          ..manualKey = _detectedKey ?? 'C');
     final hasChords = _detectedKey != null;
 
     return Container(

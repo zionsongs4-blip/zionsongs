@@ -14,6 +14,7 @@ import '../../search/home_search_repository.dart';
 import '../../../../services/speech_to_text_service.dart';
 import '../../../../screens/folder_doc_screen.dart';
 import '../../../home/repositories/folder_repository.dart';
+import '../../../../utils/folder_navigation_utils.dart';
 
 class _FolderLocation {
   const _FolderLocation({
@@ -146,13 +147,11 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
 
     if (existingPref != null) {
       _pref = existingPref;
-      _detectedKey = existingPref.manualKey?.isNotEmpty == true 
-          ? existingPref.manualKey 
+      _detectedKey = existingPref.manualKey?.isNotEmpty == true
+          ? existingPref.manualKey
           : HymnTransposeLogic.detectKey(widget.hymn.originalLyrics);
     } else {
-      _detectedKey = HymnTransposeLogic.detectKey(
-        widget.hymn.originalLyrics,
-      );
+      _detectedKey = HymnTransposeLogic.detectKey(widget.hymn.originalLyrics);
 
       _pref = UserHymnPref()
         ..hymnId = widget.hymn.hymnId
@@ -211,20 +210,37 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
     final viewListRecords = await widget.isar.viewListItemRecords
         .filter()
         .hymnIdEqualTo(widget.hymn.hymnId)
-        .userIdEqualTo(AuthService.userId)
         .findAll();
-    final viewListFolderIds = <String>{
-      for (final record in viewListRecords) record.folderId,
-    };
+    viewListRecords.removeWhere(
+      (record) => !isVisibleRelationshipUser(
+        recordUserId: record.userId,
+        activeUserId: AuthService.userId,
+      ),
+    );
+    final viewListFolderIds = uniqueIdsPreservingOrder(
+      viewListRecords.map((record) => record.folderId),
+    );
 
     final medleyRecords = await widget.isar.medleyItemRecords
         .filter()
         .hymnIdEqualTo(widget.hymn.hymnId)
-        .userIdEqualTo(AuthService.userId)
         .findAll();
-    final medleyFolderIds = <String>{
-      for (final record in medleyRecords) record.folderId,
-    };
+    medleyRecords.removeWhere(
+      (record) => !isVisibleRelationshipUser(
+        recordUserId: record.userId,
+        activeUserId: AuthService.userId,
+      ),
+    );
+    final medleyFolderIds = uniqueIdsPreservingOrder(
+      medleyRecords.map((record) => record.folderId),
+    );
+
+    debugPrint(
+      'Batch lookup: hymnId=${widget.hymn.hymnId} '
+      'userId=${AuthService.userId} viewListMemberships=${viewListRecords.length} '
+      'viewListFolders=${viewListFolderIds.length} '
+      'medleyMemberships=${medleyRecords.length} medleyFolders=${medleyFolderIds.length}',
+    );
 
     if (mounted) {
       setState(() {
@@ -260,27 +276,45 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
       final records = await widget.isar.viewListItemRecords
           .filter()
           .hymnIdEqualTo(widget.hymn.hymnId)
-          .userIdEqualTo(AuthService.userId)
           .findAll();
+      records.removeWhere(
+        (record) => !isVisibleRelationshipUser(
+          recordUserId: record.userId,
+          activeUserId: AuthService.userId,
+        ),
+      );
+
+      final folders = await widget.isar.viewListFolderRecords.where().findAll();
+      final parentById = {
+        for (final folder in folders) folder.folderId: folder.parentId,
+      };
+      final namesById = {
+        for (final folder in folders) folder.folderId: folder.name,
+      };
 
       for (final record in records) {
         if (!folderIds.add(record.folderId)) continue;
-        final folder = await widget.isar.viewListFolderRecords
-            .filter()
-            .folderIdEqualTo(record.folderId)
-            .userIdEqualTo(AuthService.userId)
-            .findFirst();
         final parsed = parseRelationshipFolderKey(record.folderId);
         if (parsed.collection.isEmpty) continue;
+        final pathIds = _resolveStoredFolderPath(
+          record.folderId,
+          parentById,
+          parsed,
+        );
+        debugPrint(
+          'Batch folder: folderId=${record.folderId} '
+          'folderName=${namesById[record.folderId]} '
+          'path=${pathIds.join(' > ')}',
+        );
         locations.add(
           _FolderLocation(
             collection: parsed.collection,
             docId: parsed.docId,
             path: parsed.path,
-            label: folder?.name.isNotEmpty == true
-                ? folder!.name
+            label: namesById[record.folderId]?.isNotEmpty == true
+                ? namesById[record.folderId]!
                 : (parsed.path.isEmpty ? 'Root' : parsed.path.last),
-            pathLabel: parsed.path.isEmpty ? 'Root' : parsed.path.join(' / '),
+            pathLabel: _formatStoredFolderPath(pathIds, namesById, parsed),
           ),
         );
       }
@@ -288,27 +322,45 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
       final records = await widget.isar.medleyItemRecords
           .filter()
           .hymnIdEqualTo(widget.hymn.hymnId)
-          .userIdEqualTo(AuthService.userId)
           .findAll();
+      records.removeWhere(
+        (record) => !isVisibleRelationshipUser(
+          recordUserId: record.userId,
+          activeUserId: AuthService.userId,
+        ),
+      );
+
+      final folders = await widget.isar.medleyFolderRecords.where().findAll();
+      final parentById = {
+        for (final folder in folders) folder.folderId: folder.parentId,
+      };
+      final namesById = {
+        for (final folder in folders) folder.folderId: folder.name,
+      };
 
       for (final record in records) {
         if (!folderIds.add(record.folderId)) continue;
-        final folder = await widget.isar.medleyFolderRecords
-            .filter()
-            .folderIdEqualTo(record.folderId)
-            .userIdEqualTo(AuthService.userId)
-            .findFirst();
         final parsed = parseRelationshipFolderKey(record.folderId);
         if (parsed.collection.isEmpty) continue;
+        final pathIds = _resolveStoredFolderPath(
+          record.folderId,
+          parentById,
+          parsed,
+        );
+        debugPrint(
+          'Batch folder: folderId=${record.folderId} '
+          'folderName=${namesById[record.folderId]} '
+          'path=${pathIds.join(' > ')}',
+        );
         locations.add(
           _FolderLocation(
             collection: parsed.collection,
             docId: parsed.docId,
             path: parsed.path,
-            label: folder?.name.isNotEmpty == true
-                ? folder!.name
+            label: namesById[record.folderId]?.isNotEmpty == true
+                ? namesById[record.folderId]!
                 : (parsed.path.isEmpty ? 'Root' : parsed.path.last),
-            pathLabel: parsed.path.isEmpty ? 'Root' : parsed.path.join(' / '),
+            pathLabel: _formatStoredFolderPath(pathIds, namesById, parsed),
           ),
         );
       }
@@ -345,6 +397,11 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
                 onTap: () async {
                   Navigator.pop(dialogContext);
                   if (!mounted) return;
+                  debugPrint(
+                    'Batch navigation: selectedFolderId=${location.path.isEmpty ? location.docId : location.path.last} '
+                    'collection=${location.collection} docId=${location.docId} '
+                    'path=${location.path.join(' > ')}',
+                  );
                   await Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -370,6 +427,40 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
         ],
       ),
     );
+  }
+
+  List<String> _resolveStoredFolderPath(
+    String folderId,
+    Map<String, String?> parentById,
+    RelationshipFolderKey parsed,
+  ) {
+    if (parsed.path.isEmpty) return const <String>[];
+    final path = <String>[];
+    var currentId = folderId;
+    final visited = <String>{};
+    while (visited.add(currentId)) {
+      path.insert(0, currentId);
+      final parentId = parentById[currentId];
+      if (parentId == null || parentId.isEmpty) break;
+      currentId = parentId;
+    }
+    return path.length == parsed.path.length
+        ? path
+        : parsed.path
+              .map((id) => '${parsed.collection}::${parsed.docId}::$id')
+              .toList();
+  }
+
+  String _formatStoredFolderPath(
+    List<String> pathIds,
+    Map<String, String> namesById,
+    RelationshipFolderKey parsed,
+  ) {
+    if (pathIds.isEmpty) return 'Root';
+    final labels = pathIds.map((id) {
+      return namesById[id] ?? id.split('::').last;
+    }).toList();
+    return [getCollectionDisplayName(parsed.collection), ...labels].join(' / ');
   }
 
   Future<void> _togglePin() async {
@@ -520,8 +611,8 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
     if (mounted) {
       setState(() {
         _pref = pref;
-        _detectedKey = pref.manualKey?.isNotEmpty == true 
-            ? pref.manualKey 
+        _detectedKey = pref.manualKey?.isNotEmpty == true
+            ? pref.manualKey
             : HymnTransposeLogic.detectKey(widget.hymn.originalLyrics);
       });
     }
@@ -593,7 +684,10 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
                   icon: const Icon(Icons.mic, size: 18),
                   tooltip: 'Voice search',
                   padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                  constraints: const BoxConstraints(
+                    minWidth: 28,
+                    minHeight: 28,
+                  ),
                   onSelected: _listenForSearch,
                   itemBuilder: (context) => const [
                     PopupMenuItem(
@@ -627,7 +721,12 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
             _searchInputController.text.trim().isNotEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text('No results found', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface)),
+            child: Text(
+              'No results found',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface,
+              ),
+            ),
           )
         else if (_searchController.results.isNotEmpty)
           ConstrainedBox(
@@ -665,9 +764,9 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
     });
     if (!outcome.success || outcome.text.trim().isEmpty) {
       if (outcome.errorMessage != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(outcome.errorMessage!)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(outcome.errorMessage!)));
       }
       return;
     }
@@ -693,10 +792,7 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
             color: theme.scaffoldBackgroundColor,
-            border: Border.all(
-              color: theme.dividerColor,
-              width: 1.5,
-            ),
+            border: Border.all(color: theme.dividerColor, width: 1.5),
             borderRadius: BorderRadius.circular(14),
           ),
           child: _buildSearchModeContent(),
@@ -723,7 +819,10 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
                   widget.hymn.title,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontWeight: FontWeight.w600, color: textColor),
+                  style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    color: textColor,
+                  ),
                 ),
               ),
             ),
@@ -864,7 +963,10 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
                           const SizedBox(width: 6),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: Text('T', style: TextStyle(color: textColor)),
+                            child: Text(
+                              'T',
+                              style: TextStyle(color: textColor),
+                            ),
                           ),
 
                           _buildCompactField(
@@ -879,7 +981,10 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
                           const SizedBox(width: 6),
                           Padding(
                             padding: const EdgeInsets.symmetric(horizontal: 4),
-                            child: Text('B', style: TextStyle(color: textColor)),
+                            child: Text(
+                              'B',
+                              style: TextStyle(color: textColor),
+                            ),
                           ),
 
                           _buildCompactField(
@@ -974,9 +1079,7 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
                           child: Center(
                             child: Container(
                               decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: theme.dividerColor,
-                                ),
+                                border: Border.all(color: theme.dividerColor),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: IconButton(
@@ -998,9 +1101,7 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
                           child: Center(
                             child: Container(
                               decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: theme.dividerColor,
-                                ),
+                                border: Border.all(color: theme.dividerColor),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: IconButton(
@@ -1051,7 +1152,10 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
                 children: [
                   Text(
                     'STY',
-                    style: TextStyle(fontWeight: FontWeight.w600, color: textColor),
+                    style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      color: textColor,
+                    ),
                   ),
 
                   const SizedBox(width: 6),

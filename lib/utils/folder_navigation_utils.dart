@@ -8,7 +8,11 @@ String getCollectionDisplayName(String collection) {
   }
 }
 
-List<String> buildBreadcrumbLabels(String collection, List<String> path, Map<String, String> folderLabels) {
+List<String> buildBreadcrumbLabels(
+  String collection,
+  List<String> path,
+  Map<String, String> folderLabels,
+) {
   final labels = <String>[getCollectionDisplayName(collection)];
   for (var index = 0; index < path.length; index++) {
     final prefix = path.sublist(0, index + 1);
@@ -28,3 +32,23 @@ String friendlyNameForPath(List<String> path) {
 }
 
 String _friendlyNameFromPath(List<String> path) => friendlyNameForPath(path);
+
+bool isVisibleRelationshipUser({
+  required String recordUserId,
+  required String activeUserId,
+}) {
+  if (activeUserId.isEmpty) {
+    return recordUserId == 'local-user';
+  }
+
+  // Keep records created before authentication was initialized visible.
+  return recordUserId == activeUserId || recordUserId == 'local-user';
+}
+
+List<String> uniqueIdsPreservingOrder(Iterable<String> ids) {
+  final seen = <String>{};
+  return [
+    for (final id in ids)
+      if (seen.add(id)) id,
+  ];
+}

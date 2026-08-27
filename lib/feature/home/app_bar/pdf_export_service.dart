@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
@@ -6,9 +5,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:printing/printing.dart';
 
 import '../hymn/hymn_models.dart';
 
@@ -108,10 +107,12 @@ class PdfExportService {
     final file = File(path);
     debugPrint('Sharing PDF from generated file: ${file.path}');
 
-    await Share.shareXFiles(
-      [XFile(file.path)],
-      subject: 'Zion Hymns',
-      text: 'Please find the selected Zion hymns attached as a PDF.',
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile(file.path)],
+        subject: 'Zion Hymns',
+        text: 'Please find the selected Zion hymns attached as a PDF.',
+      ),
     );
   }
 
@@ -138,10 +139,6 @@ class PdfExportService {
   }
 
   Future<Uint8List> generateHymnPdf(List<LocalHymn> hymns) async {
-    // -------------------------------------------------------------
-    // Load fonts from Flutter assets.
-    // -------------------------------------------------------------
-
     final hindiFontBytes = await _loadAssetBytes(
       'assets/NotoSansDevanagari-Regular.ttf',
     );
@@ -154,274 +151,140 @@ class PdfExportService {
       'assets/NotoSans-Regular.ttf',
     );
 
-    final hindiBase64 = base64Encode(hindiFontBytes);
-    final malayalamBase64 = base64Encode(malayalamFontBytes);
-    final englishBase64 = base64Encode(englishFontBytes);
+    final hindiFont = pw.Font.ttf(ByteData.sublistView(hindiFontBytes));
+    final malayalamFont = pw.Font.ttf(ByteData.sublistView(malayalamFontBytes));
+    final englishFont = pw.Font.ttf(ByteData.sublistView(englishFontBytes));
+    final document = pw.Document(title: 'Zion Hymns', author: 'Zion Songs');
 
-    // -------------------------------------------------------------
-    // Build HTML.
-    //
-    // Hindi and Malayalam are deliberately kept as TWO columns.
-    // -------------------------------------------------------------
+    for (final hymn in hymns) {
+      final hindi = _removeChords(hymn.hindiLyrics?.trim() ?? '');
+      final malayalam = _removeChords(hymn.malayalamLyrics?.trim() ?? '');
+      final english = _removeChords(hymn.englishLyrics?.trim() ?? '');
+      final secondLanguage = malayalam.isNotEmpty ? malayalam : english;
+      final secondFont = malayalam.isNotEmpty ? malayalamFont : englishFont;
+      final title = hymn.title.trim().isNotEmpty
+          ? hymn.title.trim()
+          : hymn.hymnId;
 
-    final hymnPages = hymns
-        .map((hymn) {
-          final hindi = _removeChords(hymn.hindiLyrics?.trim() ?? '');
+      document.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.fromLTRB(43, 51, 43, 51),
+          footer: (context) => pw.Container(
+            alignment: pw.Alignment.center,
+            padding: const pw.EdgeInsets.only(top: 6),
+            decoration: const pw.BoxDecoration(
+              border: pw.Border(top: pw.BorderSide(color: PdfColors.grey)),
+            ),
+            child: pw.Text(
+              'Zion Songs',
+              style: pw.TextStyle(
+                font: englishFont,
+                fontSize: 8,
+                color: PdfColors.grey,
+              ),
+            ),
+          ),
+          build: (context) => [
+            pw.Center(
+              child: pw.Text(
+                title.toUpperCase(),
+                style: pw.TextStyle(
+                  font: englishFont,
+                  fontSize: 18,
+                  fontWeight: pw.FontWeight.bold,
+                ),
+              ),
+            ),
+            pw.Divider(color: PdfColors.black),
+            pw.SizedBox(height: 16),
+            pw.Table(
+              columnWidths: const {
+                0: pw.FlexColumnWidth(1),
+                1: pw.FixedColumnWidth(12),
+                2: pw.FlexColumnWidth(1),
+              },
+              children: [
+                pw.TableRow(
+                  children: [
+                    _lyricsColumn(
+                      'Hindi',
+                      hindi,
+                      hindiFont,
+                      fallbackFont: englishFont,
+                      rightPadding: 12,
+                    ),
+                    pw.Container(
+                      width: 1,
+                      color: PdfColors.grey,
+                      constraints: const pw.BoxConstraints(minHeight: 200),
+                    ),
+                    _lyricsColumn(
+                      malayalam.isNotEmpty ? 'Malayalam' : 'English',
+                      secondLanguage,
+                      secondFont,
+                      fallbackFont: englishFont,
+                      leftPadding: 12,
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
 
-          final malayalam = _removeChords(hymn.malayalamLyrics?.trim() ?? '');
-          final english = _removeChords(hymn.englishLyrics?.trim() ?? '');
+    return document.save();
+  }
 
-          final title = _escapeHtml(
-            hymn.title.trim().isNotEmpty ? hymn.title.trim() : hymn.hymnId,
-          );
-
-          return '''
-        <section class="hymn-page">
-
-          <div class="header">
-            <div class="title">$title</div>
-            <div class="title-line"></div>
-          </div>
-
-          <table class="lyrics-table">
-            <tr>
-              <td class="language-column hindi-column">
-                <div class="language-title">Hindi</div>
-                <div class="language-line"></div>
-                <div class="lyrics hindi-lyrics">
-                  ${_formatLyricsForHtml(hindi)}
-                </div>
-              </td>
-
-              <td class="divider-column">
-                <div class="divider"></div>
-              </td>
-
-              <td class="language-column malayalam-column">
-                <div class="language-title">${malayalam.isNotEmpty ? 'Malayalam' : 'English'}</div>
-                <div class="language-line"></div>
-                <div class="lyrics ${malayalam.isNotEmpty ? 'malayalam-lyrics' : 'english-lyrics'}">
-                  ${_formatLyricsForHtml(malayalam.isNotEmpty ? malayalam : english)}
-                </div>
-              </td>
-            </tr>
-          </table>
-
-          <div class="footer">
-            Zion Songs
-          </div>
-
-        </section>
-      ''';
-        })
-        .join('');
-
-    final html =
-        '''
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-
-<style>
-
-@font-face {
-  font-family: 'ZionHindi';
-  src: url(data:font/ttf;base64,$hindiBase64);
-}
-
-@font-face {
-  font-family: 'ZionMalayalam';
-  src: url(data:font/ttf;base64,$malayalamBase64);
-}
-
-@font-face {
-  font-family: 'ZionEnglish';
-  src: url(data:font/ttf;base64,$englishBase64);
-}
-
-@page {
-  size: A4;
-  margin: 18mm 15mm 18mm 15mm;
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  background: white;
-  color: #111;
-}
-
-body {
-  font-family: 'ZionEnglish', sans-serif;
-}
-
-.hymn-page {
-  position: relative;
-  width: 100%;
-  page-break-after: always;
-  padding-bottom: 15mm;
-}
-
-.hymn-page:last-child {
-  page-break-after: auto;
-}
-
-/* -------------------------------------------------------------
-   HEADER
-   ------------------------------------------------------------- */
-
-.header {
-  width: 100%;
-  text-align: center;
-  margin-bottom: 8mm;
-}
-
-.title {
-  font-family: 'ZionEnglish', sans-serif;
-  font-size: 18pt;
-  font-weight: bold;
-  text-transform: uppercase;
-  text-align: center;
-}
-
-.title-line {
-  width: 100%;
-  border-bottom: 1px solid #222;
-  margin-top: 3mm;
-}
-
-/* -------------------------------------------------------------
-   TWO LANGUAGE COLUMNS
-   ------------------------------------------------------------- */
-
-.lyrics-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-
-.language-column {
-  width: 48%;
-  vertical-align: top;
-}
-
-.hindi-column {
-  padding-right: 4mm;
-}
-
-.malayalam-column {
-  padding-left: 4mm;
-}
-
-.divider-column {
-  width: 4%;
-  vertical-align: top;
-  text-align: center;
-}
-
-.divider {
-  display: inline-block;
-  width: 1px;
-  min-height: 200mm;
-  background: #999;
-}
-
-/* -------------------------------------------------------------
-   LANGUAGE HEADINGS
-   ------------------------------------------------------------- */
-
-.language-title {
-  font-family: 'ZionEnglish', sans-serif;
-  font-size: 11pt;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: 2mm;
-}
-
-.language-line {
-  border-bottom: 1px solid #999;
-  margin-bottom: 4mm;
-}
-
-/* -------------------------------------------------------------
-   LYRICS
-   ------------------------------------------------------------- */
-
-.lyrics {
-  white-space: pre-wrap;
-  font-size: 11pt;
-  line-height: 1.55;
-  overflow-wrap: break-word;
-  word-break: normal;
-}
-
-.hindi-lyrics {
-  font-family: 'ZionHindi', sans-serif;
-}
-
-.malayalam-lyrics {
-  font-family: 'ZionMalayalam', sans-serif;
-}
-
-/* -------------------------------------------------------------
-   FOOTER
-   ------------------------------------------------------------- */
-
-.footer {
-  margin-top: 10mm;
-  border-top: 1px solid #999;
-  padding-top: 2mm;
-  text-align: center;
-  font-family: 'ZionEnglish', sans-serif;
-  font-size: 8pt;
-  color: #555;
-}
-
-</style>
-</head>
-
-<body>
-
-$hymnPages
-
-</body>
-</html>
-''';
-
-    // -------------------------------------------------------------
-    // HTML -> PDF
-    //
-    // This uses the HTML rendering engine rather than the
-    // pdf package's direct Indic text shaping.
-    // -------------------------------------------------------------
-
-    return Printing.convertHtml(html: html, format: PdfPageFormat.a4);
+  pw.Widget _lyricsColumn(
+    String language,
+    String lyrics,
+    pw.Font font, {
+    pw.Font? fallbackFont,
+    double leftPadding = 0,
+    double rightPadding = 0,
+  }) {
+    return pw.Padding(
+      padding: pw.EdgeInsets.only(left: leftPadding, right: rightPadding),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.stretch,
+        children: [
+          pw.Center(
+            child: pw.Text(
+              language,
+              style: pw.TextStyle(
+                font: font,
+                fontFallback: fallbackFont == null
+                    ? const <pw.Font>[]
+                    : <pw.Font>[fallbackFont],
+                fontSize: 11,
+                fontWeight: pw.FontWeight.bold,
+              ),
+            ),
+          ),
+          pw.Divider(color: PdfColors.grey),
+          pw.Text(
+            lyrics,
+            style: pw.TextStyle(
+              font: font,
+              fontFallback: fallbackFont == null
+                  ? const <pw.Font>[]
+                  : <pw.Font>[fallbackFont],
+              fontSize: 11,
+              lineSpacing: 5,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<Uint8List> _loadAssetBytes(String path) async {
     final data = await rootBundle.load(path);
 
     return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
-  }
-
-  // ---------------------------------------------------------------
-  // FORMAT LYRICS FOR HTML
-  //
-  // Preserve line breaks while safely escaping HTML characters.
-  // ---------------------------------------------------------------
-
-  String _formatLyricsForHtml(String text) {
-    if (text.trim().isEmpty) {
-      return '';
-    }
-
-    return _escapeHtml(text);
   }
 
   // ---------------------------------------------------------------
@@ -443,18 +306,5 @@ $hymnPages
         )
         .replaceAll(RegExp(r'[ ]{2,}'), ' ')
         .trim();
-  }
-
-  // ---------------------------------------------------------------
-  // HTML ESCAPING
-  // ---------------------------------------------------------------
-
-  String _escapeHtml(String text) {
-    return text
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#39;');
   }
 }

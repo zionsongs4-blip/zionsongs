@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'google_sign_in_service.dart';
 import 'auth_repository.dart';
 import '../home/home_page/home_page.dart';
+import '../home/hymn/hymn_auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -31,26 +32,23 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      final approved =
-          await AuthRepository.isUserApproved(user);
+      final approved = await AuthRepository.isUserApproved(user);
 
       if (!approved) {
         await GoogleSignInService.signOut();
 
         setState(() {
-          error =
-              'Access denied. Your account is not registered or approved.';
+          error = 'Access denied. Your account is not registered or approved.';
         });
         return;
       }
 
-      Navigator.pushReplacement(
-  context,
-  MaterialPageRoute(
-    builder: (_) => const HomePage(),
-  ),
-);
+      await AuthService.init(user.uid);
 
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const HomePage()),
+      );
     } catch (e) {
       setState(() {
         error = e.toString();
@@ -73,10 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
             children: [
               const Text(
                 'Zion Songs',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
               ),
 
               const SizedBox(height: 40),
@@ -85,17 +80,12 @@ class _LoginScreenState extends State<LoginScreen> {
                 onPressed: loading ? null : _login,
                 child: loading
                     ? const CircularProgressIndicator()
-                    : const Text(
-                        'Sign in with Google',
-                      ),
+                    : const Text('Sign in with Google'),
               ),
 
               if (error != null) ...[
                 const SizedBox(height: 20),
-                Text(
-                  error!,
-                  textAlign: TextAlign.center,
-                ),
+                Text(error!, textAlign: TextAlign.center),
               ],
             ],
           ),
