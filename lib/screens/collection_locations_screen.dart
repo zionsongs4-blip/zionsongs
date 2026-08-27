@@ -22,11 +22,14 @@ class CollectionLocationsScreen extends StatelessWidget {
     required this.collection,
     required this.hymnId,
     required this.locations,
+    this.onOpenCollection,
   });
 
   final String collection;
   final String hymnId;
   final List<CollectionLocation> locations;
+  final void Function(String hymnId, List<String> hymnIds, String? folderName)?
+  onOpenCollection;
 
   String get _title =>
       collection == 'medleys' ? 'Medley Locations' : 'View List Locations';
@@ -53,6 +56,7 @@ class CollectionLocationsScreen extends StatelessWidget {
                   docName: location.folderName,
                   initialPath: location.path,
                   initialHighlightHymnId: hymnId,
+                  onOpenCollection: onOpenCollection,
                 ),
               ),
             ),

@@ -758,6 +758,13 @@ class _HomePageState extends State<HomePage> {
           ),
           initialHymnId: initialHymnId,
           hymnIds: hymnIds,
+          onOpenCollection: (hymnId, selectedHymnIds, folderName) {
+            _openCollectionHymnWorkspace(
+              hymnId,
+              selectedHymnIds,
+              folderName: folderName,
+            );
+          },
         );
       case WorkspaceTabType.selection:
         final hymnIds = List<String>.from(

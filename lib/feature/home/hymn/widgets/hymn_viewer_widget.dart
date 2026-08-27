@@ -32,6 +32,8 @@ class HymnViewerWidget extends StatefulWidget {
   final List<LocalHymn> initialHymns;
   final ValueChanged<String>? onSearchResultSelected;
   final Future<void> Function(String hymnId)? onOpenSearchResult;
+  final void Function(String hymnId, List<String> hymnIds, String? folderName)?
+  onOpenCollection;
   final ViewerMode mode;
   final ValueChanged<String>? onPageChanged;
   final ValueNotifier<double>? lyricsScaleNotifier;
@@ -44,6 +46,7 @@ class HymnViewerWidget extends StatefulWidget {
     this.initialHymns = const <LocalHymn>[],
     this.onSearchResultSelected,
     this.onOpenSearchResult,
+    this.onOpenCollection,
     this.mode = ViewerMode.displayAll,
     this.onPageChanged,
     this.lyricsScaleNotifier,
@@ -927,6 +930,7 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
                     onToggleAppInfo: _togglePresentationMode,
                     onSearchPressed: _openSearch,
                     onSearchResultSelected: _selectSearchResult,
+                    onOpenCollection: widget.onOpenCollection,
                     onThemePressed: _themePlaceholder,
                     onDecreaseFont: _decreaseLyricsFont,
                     onIncreaseFont: _increaseLyricsFont,

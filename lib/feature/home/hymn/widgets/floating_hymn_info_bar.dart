@@ -28,6 +28,8 @@ class FloatingHymnInfoBar extends StatefulWidget {
   final VoidCallback? onToggleAppInfo;
   final VoidCallback? onSearchPressed;
   final ValueChanged<String>? onSearchResultSelected;
+  final void Function(String hymnId, List<String> hymnIds, String? folderName)?
+  onOpenCollection;
   final VoidCallback? onThemePressed;
   final VoidCallback? onDecreaseFont;
   final VoidCallback? onIncreaseFont;
@@ -47,6 +49,7 @@ class FloatingHymnInfoBar extends StatefulWidget {
     this.onToggleAppInfo,
     this.onSearchPressed,
     this.onSearchResultSelected,
+    this.onOpenCollection,
     this.onThemePressed,
     this.onDecreaseFont,
     this.onIncreaseFont,
@@ -367,6 +370,7 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
           collection: type == NOTE_TYPE_MEDLEY ? 'medleys' : 'viewlists',
           hymnId: widget.hymn.hymnId,
           locations: locations,
+          onOpenCollection: widget.onOpenCollection,
         ),
       ),
     );
