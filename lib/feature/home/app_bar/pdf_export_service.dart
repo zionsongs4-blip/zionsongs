@@ -29,6 +29,17 @@ class PdfExportService {
     String html,
     PdfPageFormat format,
   ) {
+    if (Platform.isAndroid) {
+      return const MethodChannel('zionsongs.pdf')
+          .invokeMethod<Uint8List>('convertHtmlToPdf', {'html': html})
+          .then((bytes) {
+            if (bytes == null) {
+              throw StateError('Android PDF renderer returned no data.');
+            }
+            return bytes;
+          });
+    }
+
     // Native WebView shaping is required for Hindi and Malayalam conjuncts.
     // ignore: deprecated_member_use
     return Printing.convertHtml(html: html, format: format);
@@ -161,7 +172,7 @@ class PdfExportService {
   }
 
   Future<Uint8List> generateHymnPdf(List<LocalHymn> hymns) async {
-    final html = await buildHymnHtml(hymns);
+    final html = await buildHymnHtml(hymns, embedFonts: !Platform.isAndroid);
     debugPrint(
       'PDF generation: converting ${hymns.length} hymn(s), '
       'htmlBytes=${html.length}',
@@ -181,7 +192,10 @@ class PdfExportService {
   }
 
   @visibleForTesting
-  Future<String> buildHymnHtml(List<LocalHymn> hymns) async {
+  Future<String> buildHymnHtml(
+    List<LocalHymn> hymns, {
+    bool embedFonts = true,
+  }) async {
     final hindiFontBytes = await _loadAssetBytes(
       'assets/NotoSansDevanagari-Regular.ttf',
     );
@@ -194,9 +208,15 @@ class PdfExportService {
       'assets/NotoSans-Regular.ttf',
     );
 
-    final hindiBase64 = base64Encode(hindiFontBytes);
-    final malayalamBase64 = base64Encode(malayalamFontBytes);
-    final englishBase64 = base64Encode(englishFontBytes);
+    final hindiSource = embedFonts
+        ? 'data:font/ttf;base64,${base64Encode(hindiFontBytes)}'
+        : 'assets/NotoSansDevanagari-Regular.ttf';
+    final malayalamSource = embedFonts
+        ? 'data:font/ttf;base64,${base64Encode(malayalamFontBytes)}'
+        : 'assets/NotoSansMalayalam-Regular.ttf';
+    final englishSource = embedFonts
+        ? 'data:font/ttf;base64,${base64Encode(englishFontBytes)}'
+        : 'assets/NotoSans-Regular.ttf';
     final pages = hymns
         .map((hymn) {
           final hindi = _removeChords(hymn.hindiLyrics?.trim() ?? '');
@@ -222,9 +242,9 @@ class PdfExportService {
 
     final html =
         '''<!doctype html><html><head><meta charset="UTF-8"><style>
-@font-face{font-family:Hindi;src:url(data:font/ttf;base64,$hindiBase64)}
-@font-face{font-family:Malayalam;src:url(data:font/ttf;base64,$malayalamBase64)}
-@font-face{font-family:English;src:url(data:font/ttf;base64,$englishBase64)}
+@font-face{font-family:Hindi;src:url($hindiSource)}
+@font-face{font-family:Malayalam;src:url($malayalamSource)}
+@font-face{font-family:English;src:url($englishSource)}
 @page{size:A4;margin:18mm 15mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:English,sans-serif}
 .hymn-page{page-break-after:always}.hymn-page:last-child{page-break-after:auto}h1{text-align:center;font: bold 18pt English;border-bottom:1px solid #222;padding-bottom:3mm}.columns{width:100%;border-collapse:collapse;table-layout:fixed}.language{width:48%;vertical-align:top;white-space:pre-wrap;font-size:11pt;line-height:1.55;overflow-wrap:break-word}.language h2{text-align:center;font: bold 11pt English;border-bottom:1px solid #999;padding-bottom:2mm}.hindi .lyrics{font-family:Hindi,English,sans-serif}.malayalam .lyrics{font-family:Malayalam,English,sans-serif}.english .lyrics{font-family:English,sans-serif}.divider-cell{width:4%;vertical-align:top;text-align:center}.divider{display:inline-block;width:1px;min-height:200mm;background:#999}footer{text-align:center;border-top:1px solid #999;margin-top:10mm;padding-top:2mm;color:#555;font-size:8pt}
 </style></head><body>$pages</body></html>''';

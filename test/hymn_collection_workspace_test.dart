@@ -63,11 +63,15 @@ void main() {
     for (final collection in ['viewlists', 'medleys']) {
       expect(
         resolveRelationshipFolderPath(
-          folderId: 'child',
+          folderId: '$collection::all-zones::parent::child',
           collection: collection,
           docId: 'all-zones',
           encodedPath: ['child'],
-          parentById: {'child': 'parent', 'parent': null},
+          parentById: {
+            '$collection::all-zones::parent::child':
+                '$collection::all-zones::parent',
+            '$collection::all-zones::parent': null,
+          },
         ),
         ['parent', 'child'],
       );

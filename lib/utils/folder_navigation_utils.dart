@@ -66,14 +66,23 @@ List<String> resolveRelationshipFolderPath({
   var currentId = folderId;
   final visited = <String>{};
   while (visited.add(currentId)) {
-    path.insert(0, currentId);
+    path.insert(0, _relationshipFolderSegment(currentId, collection, docId));
     final parentId = parentById[currentId];
     if (parentId == null || parentId.isEmpty) break;
     currentId = parentId;
   }
 
   if (path.length >= encodedPath.length) return path;
-  return encodedPath
-      .map((id) => '$collection::$docId::$id')
-      .toList();
+  return List<String>.from(encodedPath);
+}
+
+String _relationshipFolderSegment(
+  String relationshipId,
+  String collection,
+  String docId,
+) {
+  final prefix = '$collection::$docId::';
+  return relationshipId.startsWith(prefix)
+      ? relationshipId.substring(prefix.length).split('::').last
+      : relationshipId;
 }

@@ -89,6 +89,22 @@ void main() {
       expect(html, contains('മലയാളം പാട്ട്'));
     });
 
+    test(
+      'uses packaged font URLs for the compact native HTML variant',
+      () async {
+        final html = await PdfExportService().buildHymnHtml([
+          LocalHymn()
+            ..hymnId = 'h1'
+            ..title = 'Compact',
+        ], embedFonts: false);
+
+        expect(html, contains('assets/NotoSansDevanagari-Regular.ttf'));
+        expect(html, contains('assets/NotoSansMalayalam-Regular.ttf'));
+        expect(html, isNot(contains('data:font/ttf;base64')));
+        expect(html.length, lessThan(10000));
+      },
+    );
+
     test('accepts only valid PDF bytes from the converter', () async {
       final service = PdfExportService(
         htmlConverter: (html, format) async => Uint8List.fromList([

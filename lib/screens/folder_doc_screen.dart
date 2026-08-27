@@ -2350,6 +2350,11 @@ class _FolderDocScreenState extends State<FolderDocScreen> {
   }
 
   Future<void> _restoreNavigationState() async {
+    if (widget.initialPath != null && widget.initialPath!.isNotEmpty) {
+      await _persistNavigationState();
+      return;
+    }
+
     final prefs = await SharedPreferences.getInstance();
     final stateJson = prefs.getString(_storageKey());
     if (stateJson == null || stateJson.isEmpty) {
