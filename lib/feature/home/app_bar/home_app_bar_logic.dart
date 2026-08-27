@@ -205,6 +205,14 @@ class HomeAppBarLogic {
 
   Future<void> onOpenSelection(BuildContext context) async {
     final ids = List<String>.from(_selectedIds);
+    await _openHymns(context, ids);
+  }
+
+  Future<void> onOpenHymns(BuildContext context, List<String> hymnIds) async {
+    await _openHymns(context, List<String>.from(hymnIds));
+  }
+
+  Future<void> _openHymns(BuildContext context, List<String> ids) async {
     debugPrint('Open flow: selected ${ids.length} hymns: $ids');
     if (ids.isEmpty) {
       debugPrint('Open flow stopped: no selected hymns.');

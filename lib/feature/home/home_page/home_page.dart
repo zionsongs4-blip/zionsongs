@@ -739,6 +739,7 @@ class _HomePageState extends State<HomePage> {
           );
           return HymnCollectionWorkspace(
             key: ValueKey('collection_${workspace.id}'),
+            onOpenHymn: (hymnId) => _appBarLogic.onOpenHymns(context, [hymnId]),
             initialTabs: [
               CollectionTab(
                 id: workspace.id,
@@ -1440,6 +1441,7 @@ class _HomePageState extends State<HomePage> {
                 child: HymnCollectionWorkspace(
                   key: _collectionWorkspaceKey,
                   initialTabs: const <CollectionTab>[],
+                  onOpenHymn: (hymnId) => _appBarLogic.onOpenHymns(context, [hymnId]),
                   onEmpty: () {
                     setState(() {
                       _collectionWorkspaceVisible = false;

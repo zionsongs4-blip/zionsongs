@@ -84,6 +84,7 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
   List<String> _beats = [];
   bool _expanded = false;
   bool _searchMode = false;
+  bool _isListeningForSearch = false;
   late final TextEditingController _tempoController;
   late final TextEditingController _beatController;
   late final TextEditingController _styleController;
@@ -578,14 +579,33 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
                   onChanged: _searchController.onQueryChanged,
                 ),
               ),
-              IconButton(
-                visualDensity: VisualDensity.compact,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
-                icon: const Icon(Icons.mic, size: 18),
-                tooltip: 'Voice search',
-                onPressed: _listenForSearch,
-              ),
+              if (_isListeningForSearch)
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 6),
+                  child: SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  ),
+                )
+              else
+                PopupMenuButton<SpeechFieldKind>(
+                  icon: const Icon(Icons.mic, size: 18),
+                  tooltip: 'Voice search',
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                  onSelected: _listenForSearch,
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(
+                      value: SpeechFieldKind.english,
+                      child: Text('English'),
+                    ),
+                    PopupMenuItem(
+                      value: SpeechFieldKind.hindi,
+                      child: Text('Hindi'),
+                    ),
+                  ],
+                ),
               IconButton(
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
@@ -632,11 +652,17 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
     );
   }
 
-  Future<void> _listenForSearch() async {
+  Future<void> _listenForSearch(SpeechFieldKind fieldKind) async {
+    setState(() {
+      _isListeningForSearch = true;
+    });
     final outcome = await SpeechToTextService.instance.listenForText(
-      fieldKind: SpeechFieldKind.malayalamHindi,
+      fieldKind: fieldKind,
     );
     if (!mounted) return;
+    setState(() {
+      _isListeningForSearch = false;
+    });
     if (!outcome.success || outcome.text.trim().isEmpty) {
       if (outcome.errorMessage != null) {
         ScaffoldMessenger.of(context).showSnackBar(

@@ -121,11 +121,13 @@ CollectionHymnLayout splitCollectionHymnsForDisplay({
 class HymnCollectionWorkspace extends StatefulWidget {
   final List<CollectionTab> initialTabs;
   final VoidCallback? onEmpty;
+  final Future<void> Function(String hymnId)? onOpenHymn;
 
   const HymnCollectionWorkspace({
     super.key,
     required this.initialTabs,
     this.onEmpty,
+    this.onOpenHymn,
   });
 
   static String titleForTab(CollectionTab tab) {
@@ -503,14 +505,22 @@ class HymnCollectionWorkspaceState extends State<HymnCollectionWorkspace> {
               ),
             ),
           ),
-          HymnViewerWidget(
-            initialHymnId: primary.hymnId,
-            hymnIds: [primary.hymnId],
-            initialHymn: primary,
-            initialHymns: [primary],
-            mode: ViewerMode.displayAll,
-            onSearchResultSelected: _selectSearchedHymn,
-            lyricsScaleNotifier: _lyricsScaleNotifier,
+          SizedBox(
+            height: math.max(
+              360,
+              MediaQuery.sizeOf(context).height -
+                  MediaQuery.paddingOf(context).vertical,
+            ),
+            child: HymnViewerWidget(
+              initialHymnId: primary.hymnId,
+              hymnIds: [primary.hymnId],
+              initialHymn: primary,
+              initialHymns: [primary],
+              mode: ViewerMode.displayAll,
+              onSearchResultSelected: _selectSearchedHymn,
+              onOpenSearchResult: widget.onOpenHymn,
+              lyricsScaleNotifier: _lyricsScaleNotifier,
+            ),
           ),
         ],
       ),
