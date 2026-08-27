@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:printing/printing.dart';
 
@@ -20,9 +21,7 @@ class PdfExportService {
       return List<LocalHymn>.from(hymns);
     }
 
-    final hymnMap = {
-      for (final hymn in hymns) hymn.hymnId: hymn,
-    };
+    final hymnMap = {for (final hymn in hymns) hymn.hymnId: hymn};
 
     final ordered = <LocalHymn>[];
     final seen = <String>{};
@@ -45,9 +44,11 @@ class PdfExportService {
     return ordered;
   }
 
-  Future<void> saveHymnPdf({
-    required List<LocalHymn> hymns,
-  }) async {
+  Future<String> saveHymnPdf({required List<LocalHymn> hymns}) async {
+    _requireHymns(hymns);
+    if (Platform.isAndroid) {
+      await Permission.storage.request();
+    }
     final pdfBytes = await generateHymnPdf(hymns);
 
     String? result;
@@ -87,15 +88,15 @@ class PdfExportService {
         fileName: 'Zion_Hymns.pdf',
       );
       debugPrint('PDF saved to fallback path: $fallbackPath');
-      return;
+      return fallbackPath;
     }
 
     debugPrint('PDF saved to selected path: $result');
+    return result;
   }
 
-  Future<void> shareHymnPdf({
-    required List<LocalHymn> hymns,
-  }) async {
+  Future<void> shareHymnPdf({required List<LocalHymn> hymns}) async {
+    _requireHymns(hymns);
     final pdfBytes = await generateHymnPdf(hymns);
 
     final path = await writePdfToSafeDirectory(
@@ -114,6 +115,12 @@ class PdfExportService {
     );
   }
 
+  void _requireHymns(List<LocalHymn> hymns) {
+    if (hymns.isEmpty) {
+      throw StateError('No selected hymns were available for PDF generation.');
+    }
+  }
+
   Future<String> writePdfToSafeDirectory(
     List<int> pdfBytes, {
     required String fileName,
@@ -121,15 +128,16 @@ class PdfExportService {
   }) async {
     final dir = useTemporaryDirectory
         ? await getTemporaryDirectory()
+        : Platform.isAndroid
+        ? await getExternalStorageDirectory() ??
+              await getApplicationDocumentsDirectory()
         : await getApplicationDocumentsDirectory();
     final file = File('${dir.path}/$fileName');
     await file.writeAsBytes(pdfBytes, flush: true);
     return file.path;
   }
 
-  Future<Uint8List> generateHymnPdf(
-    List<LocalHymn> hymns,
-  ) async {
+  Future<Uint8List> generateHymnPdf(List<LocalHymn> hymns) async {
     // -------------------------------------------------------------
     // Load fonts from Flutter assets.
     // -------------------------------------------------------------
@@ -156,22 +164,18 @@ class PdfExportService {
     // Hindi and Malayalam are deliberately kept as TWO columns.
     // -------------------------------------------------------------
 
-    final hymnPages = hymns.map((hymn) {
-      final hindi = _removeChords(
-        hymn.hindiLyrics?.trim() ?? '',
-      );
+    final hymnPages = hymns
+        .map((hymn) {
+          final hindi = _removeChords(hymn.hindiLyrics?.trim() ?? '');
 
-      final malayalam = _removeChords(
-        hymn.malayalamLyrics?.trim() ?? '',
-      );
+          final malayalam = _removeChords(hymn.malayalamLyrics?.trim() ?? '');
+          final english = _removeChords(hymn.englishLyrics?.trim() ?? '');
 
-      final title = _escapeHtml(
-        hymn.title.trim().isNotEmpty
-            ? hymn.title.trim()
-            : hymn.hymnId,
-      );
+          final title = _escapeHtml(
+            hymn.title.trim().isNotEmpty ? hymn.title.trim() : hymn.hymnId,
+          );
 
-      return '''
+          return '''
         <section class="hymn-page">
 
           <div class="header">
@@ -194,10 +198,10 @@ class PdfExportService {
               </td>
 
               <td class="language-column malayalam-column">
-                <div class="language-title">Malayalam</div>
+                <div class="language-title">${malayalam.isNotEmpty ? 'Malayalam' : 'English'}</div>
                 <div class="language-line"></div>
-                <div class="lyrics malayalam-lyrics">
-                  ${_formatLyricsForHtml(malayalam)}
+                <div class="lyrics ${malayalam.isNotEmpty ? 'malayalam-lyrics' : 'english-lyrics'}">
+                  ${_formatLyricsForHtml(malayalam.isNotEmpty ? malayalam : english)}
                 </div>
               </td>
             </tr>
@@ -209,9 +213,11 @@ class PdfExportService {
 
         </section>
       ''';
-    }).join('');
+        })
+        .join('');
 
-    final html = '''
+    final html =
+        '''
 <!DOCTYPE html>
 <html>
 <head>
@@ -395,19 +401,13 @@ $hymnPages
     // pdf package's direct Indic text shaping.
     // -------------------------------------------------------------
 
-    return Printing.convertHtml(
-      html: html,
-      format: PdfPageFormat.a4,
-    );
+    return Printing.convertHtml(html: html, format: PdfPageFormat.a4);
   }
 
   Future<Uint8List> _loadAssetBytes(String path) async {
     final data = await rootBundle.load(path);
 
-    return data.buffer.asUint8List(
-      data.offsetInBytes,
-      data.lengthInBytes,
-    );
+    return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
   }
 
   // ---------------------------------------------------------------
@@ -441,10 +441,7 @@ $hymnPages
           ),
           '',
         )
-        .replaceAll(
-          RegExp(r'[ ]{2,}'),
-          ' ',
-        )
+        .replaceAll(RegExp(r'[ ]{2,}'), ' ')
         .trim();
   }
 

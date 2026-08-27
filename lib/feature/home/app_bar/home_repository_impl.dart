@@ -21,10 +21,7 @@ class HomeRepositoryImpl implements HomeRepository {
   HomeRepositoryImpl({FirebaseFirestore? firestore})
     : _firestore = firestore ?? FirebaseFirestore.instance;
 
-  static int? parseSerialNumber(
-    Object? value, {
-    String? hymnId,
-  }) {
+  static int? parseSerialNumber(Object? value, {String? hymnId}) {
     if (value is int) return value;
 
     final text = value?.toString().trim();
@@ -93,10 +90,7 @@ class HomeRepositoryImpl implements HomeRepository {
       }
     } catch (_) {}
 
-    final serialNo = parseSerialNumber(
-      hymn.hymnId,
-      hymnId: hymn.hymnId,
-    );
+    final serialNo = parseSerialNumber(hymn.hymnId, hymnId: hymn.hymnId);
 
     return home.HomeHymn(
       hymnId: hymn.hymnId,
@@ -154,9 +148,9 @@ class HomeRepositoryImpl implements HomeRepository {
     Set<String> keys,
     Set<String> dedicated,
     Set<int> years,
-    Set<TempoRange> tempoRanges,
-    [String? alphabet]
-  ) {
+    Set<TempoRange> tempoRanges, [
+    String? alphabet,
+  ]) {
     if (keys.isNotEmpty) {
       if (hymn.key == null || !keys.contains(hymn.key)) {
         return false;
@@ -164,16 +158,13 @@ class HomeRepositoryImpl implements HomeRepository {
     }
 
     if (dedicated.isNotEmpty) {
-      if (hymn.dedicated == null ||
-          !dedicated.contains(hymn.dedicated)) {
+      if (hymn.dedicated == null || !dedicated.contains(hymn.dedicated)) {
         return false;
       }
     }
 
     if (years.isNotEmpty) {
-      final year = hymn.year != null
-          ? int.tryParse(hymn.year!)
-          : null;
+      final year = hymn.year != null ? int.tryParse(hymn.year!) : null;
 
       if (year == null || !years.contains(year)) {
         return false;
@@ -182,9 +173,7 @@ class HomeRepositoryImpl implements HomeRepository {
 
     if (tempoRanges.isNotEmpty) {
       if (hymn.tempo == null ||
-          !tempoRanges.any(
-            (range) => range.contains(hymn.tempo!),
-          )) {
+          !tempoRanges.any((range) => range.contains(hymn.tempo!))) {
         return false;
       }
     }
@@ -256,14 +245,16 @@ class HomeRepositoryImpl implements HomeRepository {
     }
 
     final filtered = source
-        .where((hymn) => _matchesFilter(
-              hymn,
-              keys,
-              dedicated,
-              years,
-              tempoRanges,
-              alphabet,
-            ))
+        .where(
+          (hymn) => _matchesFilter(
+            hymn,
+            keys,
+            dedicated,
+            years,
+            tempoRanges,
+            alphabet,
+          ),
+        )
         .toList();
 
     if (keyword.trim().isEmpty) {
@@ -429,7 +420,7 @@ class HomeRepositoryImpl implements HomeRepository {
   }
 
   @override
-  Future<void> exportPdf(List<String> hymnIds) async {
+  Future<String> exportPdf(List<String> hymnIds) async {
     final hymns = await AppInitializer.isar.localHymns
         .filter()
         .anyOf(hymnIds, (q, id) => q.hymnIdEqualTo(id))
@@ -440,7 +431,7 @@ class HomeRepositoryImpl implements HomeRepository {
       hymns: hymns,
     );
 
-    await PdfExportService().saveHymnPdf(hymns: orderedHymns);
+    return PdfExportService().saveHymnPdf(hymns: orderedHymns);
   }
 
   @override

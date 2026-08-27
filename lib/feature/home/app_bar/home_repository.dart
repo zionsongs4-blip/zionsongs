@@ -78,7 +78,7 @@ abstract class HomeRepository {
   // EXPORT
   // ============================================================
 
-  Future<void> exportPdf(List<String> hymnIds);
+  Future<String> exportPdf(List<String> hymnIds);
 
   Future<void> sharePdf(List<String> hymnIds);
 

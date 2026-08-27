@@ -12,23 +12,33 @@ void main() {
   const pathProviderChannel = MethodChannel('plugins.flutter.io/path_provider');
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(pathProviderChannel, (call) async {
-    if (call.method == 'getApplicationDocumentsDirectory') {
-      final directory = Directory.systemTemp.createTempSync('pdf-export-tests-app-docs');
-      return directory.path;
-    }
-    if (call.method == 'getTemporaryDirectory') {
-      final directory = Directory.systemTemp.createTempSync('pdf-export-tests-tmp');
-      return directory.path;
-    }
-    return null;
-  });
+        if (call.method == 'getApplicationDocumentsDirectory') {
+          final directory = Directory.systemTemp.createTempSync(
+            'pdf-export-tests-app-docs',
+          );
+          return directory.path;
+        }
+        if (call.method == 'getTemporaryDirectory') {
+          final directory = Directory.systemTemp.createTempSync(
+            'pdf-export-tests-tmp',
+          );
+          return directory.path;
+        }
+        return null;
+      });
 
   group('PdfExportService', () {
     test('preserves the caller-provided hymn order when building a PDF', () {
       final hymns = <LocalHymn>[
-        LocalHymn()..hymnId = 'h1'..title = 'First',
-        LocalHymn()..hymnId = 'h2'..title = 'Second',
-        LocalHymn()..hymnId = 'h3'..title = 'Third',
+        LocalHymn()
+          ..hymnId = 'h1'
+          ..title = 'First',
+        LocalHymn()
+          ..hymnId = 'h2'
+          ..title = 'Second',
+        LocalHymn()
+          ..hymnId = 'h3'
+          ..title = 'Third',
       ];
 
       final ordered = PdfExportService.orderHymnsByIds(
@@ -62,30 +72,40 @@ void main() {
       expect(await file.length(), greaterThan(0));
     });
 
-    test('writes share PDFs to a temporary directory so they can be opened by the system share sheet', () async {
-      final service = PdfExportService();
-      final pdfBytes = Uint8List.fromList([
-        0x25,
-        0x50,
-        0x44,
-        0x46,
-        0x2D,
-        0x31,
-        0x2E,
-        0x34,
-      ]);
+    test(
+      'writes share PDFs to a temporary directory so they can be opened by the system share sheet',
+      () async {
+        final service = PdfExportService();
+        final pdfBytes = Uint8List.fromList([
+          0x25,
+          0x50,
+          0x44,
+          0x46,
+          0x2D,
+          0x31,
+          0x2E,
+          0x34,
+        ]);
 
-      final path = await service.writePdfToSafeDirectory(
-        pdfBytes,
-        fileName: 'share_test.pdf',
-        useTemporaryDirectory: true,
+        final path = await service.writePdfToSafeDirectory(
+          pdfBytes,
+          fileName: 'share_test.pdf',
+          useTemporaryDirectory: true,
+        );
+
+        expect(path, contains('pdf-export-tests-tmp'));
+
+        final file = File(path);
+        expect(await file.exists(), isTrue);
+        expect(await file.length(), greaterThan(0));
+      },
+    );
+
+    test('rejects an empty hymn selection', () async {
+      expect(
+        () => PdfExportService().saveHymnPdf(hymns: const []),
+        throwsStateError,
       );
-
-      expect(path, contains('pdf-export-tests-tmp'));
-
-      final file = File(path);
-      expect(await file.exists(), isTrue);
-      expect(await file.length(), greaterThan(0));
     });
   });
 }

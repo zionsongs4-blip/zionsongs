@@ -48,9 +48,7 @@ class HomeAppBarLogic {
     () async {
       final result = await showDialog<String>(
         context: context,
-        builder: (_) => HomeSearchDialog(
-          isar: AppInitializer.isar,
-        ),
+        builder: (_) => HomeSearchDialog(isar: AppInitializer.isar),
       );
 
       if (result == null || result.isEmpty) return;
@@ -127,9 +125,9 @@ class HomeAppBarLogic {
     }
 
     if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Added to Favorites')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Added to Favorites')));
     selectionController.clear();
   }
 
@@ -276,7 +274,9 @@ class HomeAppBarLogic {
         debugPrint('Open flow: opening selected hymns on a new screen.');
         await openSelectedHymnsToNewTab(ids);
       } else if (choice == 'existing') {
-        debugPrint('Open flow: showing ${eligibleTabs.length} existing screens.');
+        debugPrint(
+          'Open flow: showing ${eligibleTabs.length} existing screens.',
+        );
         final selectedTab = await showDialog<dynamic>(
           context: context,
           builder: (dialogContext) {
@@ -289,7 +289,9 @@ class HomeAppBarLogic {
                   itemCount: eligibleTabs.length,
                   itemBuilder: (context, index) {
                     final tab = eligibleTabs[index];
-                    final existingHymnIds = List<String>.from(tab.arguments['hymnIds'] ?? <String>[]);
+                    final existingHymnIds = List<String>.from(
+                      tab.arguments['hymnIds'] ?? <String>[],
+                    );
                     return ListTile(
                       title: Text(tab.title),
                       subtitle: Text('${existingHymnIds.length} hymns'),
@@ -334,13 +336,13 @@ class HomeAppBarLogic {
     if (_selectedIds.isEmpty) return;
 
     try {
-      await repository.exportPdf(_selectedIds);
+      final savedPath = await repository.exportPdf(_selectedIds);
 
       if (!context.mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('PDF Saved Successfully')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('PDF saved to $savedPath')));
     } catch (error, stackTrace) {
       if (!context.mounted) return;
 
@@ -348,7 +350,11 @@ class HomeAppBarLogic {
       debugPrint('PDF export failed: $err');
       debugPrint('$stackTrace');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error exporting PDF: ${err.isEmpty ? 'unknown' : err}')),
+        SnackBar(
+          content: Text(
+            'Error exporting PDF: ${err.isEmpty ? 'unknown' : err}',
+          ),
+        ),
       );
     }
   }
@@ -361,10 +367,12 @@ class HomeAppBarLogic {
 
       if (!context.mounted) return;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Sharing PDF')),
-      );
-    } catch (_) {
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Sharing PDF')));
+    } catch (error, stackTrace) {
+      debugPrint('PDF sharing failed: $error');
+      debugPrint('$stackTrace');
       if (!context.mounted) return;
 
       ScaffoldMessenger.of(
