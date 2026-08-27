@@ -71,11 +71,13 @@ class _SearchRequest {
     required this.query,
     required this.hymns,
     required this.limit,
+    this.actualSnippetForSearchText = false,
   });
 
   final String query;
   final List<_SearchHymnRecord> hymns;
   final int limit;
+  final bool actualSnippetForSearchText;
 }
 
 class _SuggestionsRequest {
@@ -99,7 +101,11 @@ List<HomeSearchIndexMatch> _searchIndexMatchesIsolate(_SearchRequest request) {
   final matches = <HomeSearchIndexMatch>[];
 
   for (final hymn in request.hymns) {
-    final match = _evaluateHymnSnapshot(hymn, normalizedQuery);
+    final match = _evaluateHymnSnapshot(
+      hymn,
+      normalizedQuery,
+      actualSnippetForSearchText: request.actualSnippetForSearchText,
+    );
     if (match.score == 0) continue;
 
     matches.add(
@@ -148,7 +154,11 @@ List<String> _searchSuggestionsIsolate(_SuggestionsRequest request) {
   return suggestions;
 }
 
-_MatchData _evaluateHymnSnapshot(_SearchHymnRecord hymn, String query) {
+_MatchData _evaluateHymnSnapshot(
+  _SearchHymnRecord hymn,
+  String query, {
+  bool actualSnippetForSearchText = false,
+}) {
   final serialNo = _extractSerialFromHymnId(hymn.hymnId);
 
   final fields = [
@@ -165,16 +175,39 @@ _MatchData _evaluateHymnSnapshot(_SearchHymnRecord hymn, String query) {
     if (raw == null || raw.trim().isEmpty) continue;
 
     if (normalizeSearchText(raw).contains(query)) {
+        final snippetSource = actualSnippetForSearchText && field.name == 'searchText'
+          ? _actualSnippetSource(hymn, query)
+          : raw;
       return _MatchData(
         score: field.score,
         field: field.name,
-        suggestion: _extractSuggestion(raw, query),
-        snippet: _extractSnippet(raw, query),
+        suggestion: _extractSuggestion(snippetSource, query),
+        snippet: _extractSnippet(snippetSource, query),
       );
     }
   }
 
   return const _MatchData(score: 0, field: '', suggestion: '', snippet: '');
+}
+
+String _actualSnippetSource(_SearchHymnRecord hymn, String query) {
+  final actualFields = [
+    hymn.hindiLyrics,
+    hymn.malayalamLyrics,
+    hymn.englishLyrics,
+    hymn.title,
+  ];
+
+  for (final field in actualFields) {
+    if (field.trim().isNotEmpty && normalizeSearchText(field).contains(query)) {
+      return field;
+    }
+  }
+
+  return actualFields.firstWhere(
+    (field) => field.trim().isNotEmpty,
+    orElse: () => hymn.title,
+  );
 }
 
 String _extractSuggestion(String rawText, String query) {
@@ -351,6 +384,7 @@ class HomeSearchRepository {
     HomeSearchQuery query, {
     HomeSearchFilters? filters,
     int limit = 100,
+    bool actualSnippetForSearchText = false,
   }) async {
     final text = query.text.trim();
     if (text.isEmpty) return const <HomeSearchIndexMatch>[];
@@ -369,6 +403,7 @@ class HomeSearchRepository {
       query: text,
       hymns: snapshotHymns,
       limit: limit,
+      actualSnippetForSearchText: actualSnippetForSearchText,
     )));
   }
 }

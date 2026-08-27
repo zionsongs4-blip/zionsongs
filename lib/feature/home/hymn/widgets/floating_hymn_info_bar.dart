@@ -10,7 +10,8 @@ import '../favorites_repository.dart';
 import '../viewlist_medley_models.dart';
 import '../../search/home_search_controller.dart';
 import '../../search/home_search_result_tile.dart';
-import '../../search/search_service.dart';
+import '../../search/home_search_repository.dart';
+import '../../../../services/speech_to_text_service.dart';
 import '../../../../screens/folder_doc_screen.dart';
 import '../../../home/repositories/folder_repository.dart';
 
@@ -41,6 +42,7 @@ class FloatingHymnInfoBar extends StatefulWidget {
   final VoidCallback onEditOpened;
   final VoidCallback? onToggleAppInfo;
   final VoidCallback? onSearchPressed;
+  final ValueChanged<String>? onSearchResultSelected;
   final VoidCallback? onThemePressed;
   final VoidCallback? onDecreaseFont;
   final VoidCallback? onIncreaseFont;
@@ -59,6 +61,7 @@ class FloatingHymnInfoBar extends StatefulWidget {
     required this.onEditOpened,
     this.onToggleAppInfo,
     this.onSearchPressed,
+    this.onSearchResultSelected,
     this.onThemePressed,
     this.onDecreaseFont,
     this.onIncreaseFont,
@@ -96,7 +99,11 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
     _styleController = TextEditingController();
     _favoritesRepository = FavoritesRepository();
     _searchInputController = TextEditingController();
-    _searchController = SearchService.instance.controller;
+    _searchController = HomeSearchController(
+      repository: HomeSearchRepository(isar: widget.isar),
+      resultLimit: 4,
+      actualSnippetForSearchText: true,
+    );
     _searchController.addListener(_refreshSearch);
     _loadDetails();
     HymnPreferencesLogic.getStyles().then(
@@ -121,6 +128,7 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
   @override
   void dispose() {
     _searchController.removeListener(_refreshSearch);
+    _searchController.dispose();
     _searchInputController.dispose();
     _tempoController.dispose();
     _beatController.dispose();
@@ -574,6 +582,14 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
                 visualDensity: VisualDensity.compact,
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
+                icon: const Icon(Icons.mic, size: 18),
+                tooltip: 'Voice search',
+                onPressed: _listenForSearch,
+              ),
+              IconButton(
+                visualDensity: VisualDensity.compact,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(minWidth: 28, minHeight: 28),
                 icon: const Icon(Icons.close, size: 18),
                 tooltip: 'Close search',
                 onPressed: _exitSearchMode,
@@ -591,7 +607,7 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
             _searchInputController.text.trim().isNotEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(vertical: 8),
-            child: Text('No results', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface)),
+            child: Text('No results found', style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurface)),
           )
         else if (_searchController.results.isNotEmpty)
           ConstrainedBox(
@@ -605,8 +621,7 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
                 return HomeSearchResultTile(
                   result: result,
                   onTap: () async {
-                    await _searchController.searchImmediately(result.title);
-                    _searchInputController.text = result.title;
+                    widget.onSearchResultSelected?.call(result.srNo);
                     _exitSearchMode();
                   },
                 );
@@ -615,6 +630,27 @@ class _FloatingHymnInfoBarState extends State<FloatingHymnInfoBar> {
           ),
       ],
     );
+  }
+
+  Future<void> _listenForSearch() async {
+    final outcome = await SpeechToTextService.instance.listenForText(
+      fieldKind: SpeechFieldKind.malayalamHindi,
+    );
+    if (!mounted) return;
+    if (!outcome.success || outcome.text.trim().isEmpty) {
+      if (outcome.errorMessage != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(outcome.errorMessage!)),
+        );
+      }
+      return;
+    }
+
+    _searchInputController.text = outcome.text;
+    _searchInputController.selection = TextSelection.collapsed(
+      offset: outcome.text.length,
+    );
+    _searchController.onQueryChanged(outcome.text);
   }
 
   @override

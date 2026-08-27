@@ -5,8 +5,14 @@ import 'home_search_repository.dart';
 
 class HomeSearchController extends ChangeNotifier {
   final HomeSearchRepository repository;
+  final int resultLimit;
+  final bool actualSnippetForSearchText;
 
-  HomeSearchController({required this.repository});
+  HomeSearchController({
+    required this.repository,
+    this.resultLimit = 50,
+    this.actualSnippetForSearchText = false,
+  });
 
   HomeSearchQuery _query = const HomeSearchQuery(text: '');
   HomeSearchFilters _filters = const HomeSearchFilters();
@@ -73,6 +79,8 @@ class HomeSearchController extends ChangeNotifier {
     final matchesFuture = repository.searchIndexMatches(
       activeQuery,
       filters: _filters,
+      limit: resultLimit,
+      actualSnippetForSearchText: actualSnippetForSearchText,
     );
 
     final suggestionsFuture = repository.searchSuggestions(activeQuery);

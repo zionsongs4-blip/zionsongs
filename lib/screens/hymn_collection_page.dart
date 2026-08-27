@@ -268,6 +268,31 @@ class HymnCollectionWorkspaceState extends State<HymnCollectionWorkspace> {
     });
   }
 
+  Future<void> _selectSearchedHymn(String hymnId) async {
+    final hymn = await AppInitializer.isar.localHymns
+        .filter()
+        .hymnIdEqualTo(hymnId)
+        .findFirst();
+    if (hymn == null || !mounted || _tabs.isEmpty) return;
+
+    final tab = _tabs[_activeTabIndex];
+    final orderedIds = <String>[
+      hymnId,
+      ...tab.hymnIds.where((id) => id != hymnId),
+    ];
+    setState(() {
+      _tabs[_activeTabIndex] = CollectionTab(
+        id: tab.id,
+        folderName: tab.folderName,
+        primaryHymnId: hymnId,
+        hymnIds: orderedIds,
+        displayTitle: tab.displayTitle,
+        displayMode: _displayMode,
+      );
+      _hymnFutures.remove(tab.id);
+    });
+  }
+
   void _reorderTabs(int oldIndex, int newIndex) {
     if (oldIndex < newIndex) {
       newIndex -= 1;
@@ -484,6 +509,7 @@ class HymnCollectionWorkspaceState extends State<HymnCollectionWorkspace> {
             initialHymn: primary,
             initialHymns: [primary],
             mode: ViewerMode.displayAll,
+            onSearchResultSelected: _selectSearchedHymn,
             lyricsScaleNotifier: _lyricsScaleNotifier,
           ),
         ],

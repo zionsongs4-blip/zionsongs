@@ -30,6 +30,7 @@ class HymnViewerWidget extends StatefulWidget {
   final List<String> hymnIds;
   final LocalHymn? initialHymn;
   final List<LocalHymn> initialHymns;
+  final ValueChanged<String>? onSearchResultSelected;
   final ViewerMode mode;
   final ValueChanged<String>? onPageChanged;
   final ValueNotifier<double>? lyricsScaleNotifier;
@@ -40,6 +41,7 @@ class HymnViewerWidget extends StatefulWidget {
     required this.hymnIds,
     this.initialHymn,
     this.initialHymns = const <LocalHymn>[],
+    this.onSearchResultSelected,
     this.mode = ViewerMode.displayAll,
     this.onPageChanged,
     this.lyricsScaleNotifier,
@@ -922,6 +924,7 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
                     onEditOpened: _openEditPage,
                     onToggleAppInfo: _togglePresentationMode,
                     onSearchPressed: _openSearch,
+                    onSearchResultSelected: _selectSearchResult,
                     onThemePressed: _themePlaceholder,
                     onDecreaseFont: _decreaseLyricsFont,
                     onIncreaseFont: _increaseLyricsFont,
@@ -950,5 +953,36 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
         ],
       ),
     );
+  }
+
+  Future<void> _selectSearchResult(String hymnId) async {
+    if (widget.onSearchResultSelected != null) {
+      widget.onSearchResultSelected!(hymnId);
+      return;
+    }
+
+    final hymn = await AppInitializer.isar.localHymns
+        .filter()
+        .hymnIdEqualTo(hymnId)
+        .findFirst();
+    if (hymn == null || !mounted) return;
+
+    final existingIndex = _sourceHymns.indexWhere(
+      (sourceHymn) => sourceHymn.hymnId == hymnId,
+    );
+    setState(() {
+      if (existingIndex >= 0) {
+        _currentIndex = existingIndex;
+      } else {
+        _sourceHymns = [hymn, ..._sourceHymns];
+        _hymnKeys[hymn.hymnId] = GlobalKey();
+        _currentIndex = 0;
+      }
+      _currentHymn = hymn;
+      _applyLayoutForHymn(hymn);
+    });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollToCurrentHymn();
+    });
   }
 }
