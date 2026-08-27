@@ -482,6 +482,7 @@ class HymnCollectionWorkspaceState extends State<HymnCollectionWorkspace> {
             initialHymnId: primary.hymnId,
             hymnIds: [primary.hymnId],
             initialHymn: primary,
+            initialHymns: [primary],
             mode: ViewerMode.displayAll,
             lyricsScaleNotifier: _lyricsScaleNotifier,
           ),

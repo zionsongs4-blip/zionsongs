@@ -821,7 +821,11 @@ class _HomePageState extends State<HomePage> {
           docId: workspace.arguments['docId'] as String? ?? 'root',
           docName: workspace.arguments['title'] as String? ?? workspace.title,
           onOpenCollection: (hymnId, hymnIds, folderName) {
-            _openCollectionHymnWorkspace(hymnId, hymnIds);
+            _openCollectionHymnWorkspace(
+              hymnId,
+              hymnIds,
+              folderName: folderName,
+            );
           },
           initialHighlightHymnId:
               workspace.arguments['primaryHymnId'] as String?,

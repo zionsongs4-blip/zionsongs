@@ -29,6 +29,7 @@ class HymnViewerWidget extends StatefulWidget {
   final String initialHymnId;
   final List<String> hymnIds;
   final LocalHymn? initialHymn;
+  final List<LocalHymn> initialHymns;
   final ViewerMode mode;
   final ValueChanged<String>? onPageChanged;
   final ValueNotifier<double>? lyricsScaleNotifier;
@@ -38,6 +39,7 @@ class HymnViewerWidget extends StatefulWidget {
     required this.initialHymnId,
     required this.hymnIds,
     this.initialHymn,
+    this.initialHymns = const <LocalHymn>[],
     this.mode = ViewerMode.displayAll,
     this.onPageChanged,
     this.lyricsScaleNotifier,
@@ -129,13 +131,19 @@ class _HymnViewerWidgetState extends State<HymnViewerWidget> {
       return;
     }
 
+    final suppliedHymns = <String, LocalHymn>{
+      for (final hymn in widget.initialHymns) hymn.hymnId: hymn,
+      if (widget.initialHymn != null)
+        widget.initialHymn!.hymnId: widget.initialHymn!,
+    };
     _sourceHymns = [];
 
     for (final id in effectiveHymnIds) {
-      final hymn = await AppInitializer.isar.localHymns
-          .filter()
-          .hymnIdEqualTo(id)
-          .findFirst();
+      final hymn = suppliedHymns[id] ??
+          await AppInitializer.isar.localHymns
+              .filter()
+              .hymnIdEqualTo(id)
+              .findFirst();
 
       if (hymn != null) {
         _sourceHymns.add(hymn);
