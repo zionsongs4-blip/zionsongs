@@ -127,6 +127,12 @@ class _HomePageState extends State<HomePage> {
       showScreenSelectorDialog: _showScreenSelectorDialog,
       openSelectedHymnsToNewTab: _openSelectedHymnsToNewTab,
       addHymnsToExistingTab: _addHymnsToExistingTab,
+      openCollectionHymnWorkspace: (hymnId, hymnIds, folderName) =>
+          _openCollectionHymnWorkspace(
+            hymnId,
+            hymnIds,
+            folderName: folderName,
+          ),
     );
 
     _hymnFuture = _loadHymns();

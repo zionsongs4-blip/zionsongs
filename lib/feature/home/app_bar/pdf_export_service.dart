@@ -31,10 +31,15 @@ class PdfExportService {
   ) {
     if (Platform.isAndroid) {
       return const MethodChannel('zionsongs.pdf')
-          .invokeMethod<Uint8List>('convertHtmlToPdf', {'html': html})
+          .invokeMethod<Uint8List>(
+            'convertHtmlToPdf',
+            {'html': html},
+          )
           .then((bytes) {
             if (bytes == null) {
-              throw StateError('Android PDF renderer returned no data.');
+              throw StateError(
+                'Android PDF renderer returned no data.',
+              );
             }
             return bytes;
           });
@@ -42,7 +47,10 @@ class PdfExportService {
 
     // Native WebView shaping is required for Hindi and Malayalam conjuncts.
     // ignore: deprecated_member_use
-    return Printing.convertHtml(html: html, format: format);
+    return Printing.convertHtml(
+      html: html,
+      format: format,
+    );
   }
 
   static List<LocalHymn> orderHymnsByIds({
@@ -53,16 +61,20 @@ class PdfExportService {
       return List<LocalHymn>.from(hymns);
     }
 
-    final hymnMap = {for (final hymn in hymns) hymn.hymnId: hymn};
+    final hymnMap = {
+      for (final hymn in hymns) hymn.hymnId: hymn,
+    };
 
     final ordered = <LocalHymn>[];
     final seen = <String>{};
 
     for (final hymnId in hymnIds) {
       final hymn = hymnMap[hymnId];
+
       if (hymn == null || seen.contains(hymn.hymnId)) {
         continue;
       }
+
       seen.add(hymn.hymnId);
       ordered.add(hymn);
     }
@@ -76,19 +88,25 @@ class PdfExportService {
     return ordered;
   }
 
-  Future<String> saveHymnPdf({required List<LocalHymn> hymns}) async {
+  Future<String> saveHymnPdf({
+    required List<LocalHymn> hymns,
+  }) async {
     _requireHymns(hymns);
+
     if (Platform.isAndroid) {
       await Permission.storage.request();
     }
+
     final pdfBytes = await generateHymnPdf(hymns);
 
     String? result;
 
     try {
       final downloadsDir = await getDownloadsDirectory();
+
       final initialDirectory =
-          downloadsDir?.path ?? '/storage/emulated/0/Download';
+          downloadsDir?.path ??
+          '/storage/emulated/0/Download';
 
       if (Platform.isAndroid) {
         result = await FilePicker.saveFile(
@@ -111,6 +129,7 @@ class PdfExportService {
     } catch (e, s) {
       debugPrint('FilePicker.saveFile failed: $e');
       debugPrint('$s');
+
       result = null;
     }
 
@@ -119,16 +138,26 @@ class PdfExportService {
         pdfBytes,
         fileName: 'Zion_Hymns.pdf',
       );
-      debugPrint('PDF saved to fallback path: $fallbackPath');
+
+      debugPrint(
+        'PDF saved to fallback path: $fallbackPath',
+      );
+
       return fallbackPath;
     }
 
-    debugPrint('PDF saved to selected path: $result');
+    debugPrint(
+      'PDF saved to selected path: $result',
+    );
+
     return result;
   }
 
-  Future<void> shareHymnPdf({required List<LocalHymn> hymns}) async {
+  Future<void> shareHymnPdf({
+    required List<LocalHymn> hymns,
+  }) async {
     _requireHymns(hymns);
+
     final pdfBytes = await generateHymnPdf(hymns);
 
     final path = await writePdfToSafeDirectory(
@@ -138,20 +167,26 @@ class PdfExportService {
     );
 
     final file = File(path);
-    debugPrint('Sharing PDF from generated file: ${file.path}');
+
+    debugPrint(
+      'Sharing PDF from generated file: ${file.path}',
+    );
 
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(file.path)],
         subject: 'Zion Hymns',
-        text: 'Please find the selected Zion hymns attached as a PDF.',
+        text:
+            'Please find the selected Zion hymns attached as a PDF.',
       ),
     );
   }
 
   void _requireHymns(List<LocalHymn> hymns) {
     if (hymns.isEmpty) {
-      throw StateError('No selected hymns were available for PDF generation.');
+      throw StateError(
+        'No selected hymns were available for PDF generation.',
+      );
     }
   }
 
@@ -163,31 +198,60 @@ class PdfExportService {
     final dir = useTemporaryDirectory
         ? await getTemporaryDirectory()
         : Platform.isAndroid
-        ? await getExternalStorageDirectory() ??
-              await getApplicationDocumentsDirectory()
-        : await getApplicationDocumentsDirectory();
-    final file = File('${dir.path}/$fileName');
-    await file.writeAsBytes(pdfBytes, flush: true);
+            ? await getExternalStorageDirectory() ??
+                await getApplicationDocumentsDirectory()
+            : await getApplicationDocumentsDirectory();
+
+    final file = File(
+      '${dir.path}/$fileName',
+    );
+
+    await file.writeAsBytes(
+      pdfBytes,
+      flush: true,
+    );
+
     return file.path;
   }
 
-  Future<Uint8List> generateHymnPdf(List<LocalHymn> hymns) async {
-    final html = await buildHymnHtml(hymns, embedFonts: !Platform.isAndroid);
+  Future<Uint8List> generateHymnPdf(
+    List<LocalHymn> hymns,
+  ) async {
+    final html = await buildHymnHtml(
+      hymns,
+      embedFonts: !Platform.isAndroid,
+    );
+
     debugPrint(
       'PDF generation: converting ${hymns.length} hymn(s), '
       'htmlBytes=${html.length}',
     );
-    final pdfBytes = await _htmlConverter(html, PdfPageFormat.a4).timeout(
+
+    final pdfBytes = await _htmlConverter(
+      html,
+      PdfPageFormat.a4,
+    ).timeout(
       _conversionTimeout,
       onTimeout: () => throw StateError(
-        'PDF conversion timed out after ${_conversionTimeout.inSeconds} seconds.',
+        'PDF conversion timed out after '
+        '${_conversionTimeout.inSeconds} seconds.',
       ),
     );
+
     if (pdfBytes.length < 4 ||
-        String.fromCharCodes(pdfBytes.take(4)) != '%PDF') {
-      throw StateError('PDF conversion returned invalid PDF data.');
+        String.fromCharCodes(
+              pdfBytes.take(4),
+            ) !=
+            '%PDF') {
+      throw StateError(
+        'PDF conversion returned invalid PDF data.',
+      );
     }
-    debugPrint('PDF generation: produced ${pdfBytes.length} bytes');
+
+    debugPrint(
+      'PDF generation: produced ${pdfBytes.length} bytes',
+    );
+
     return pdfBytes;
   }
 
@@ -211,51 +275,464 @@ class PdfExportService {
     final hindiSource = embedFonts
         ? 'data:font/ttf;base64,${base64Encode(hindiFontBytes)}'
         : 'assets/NotoSansDevanagari-Regular.ttf';
+
     final malayalamSource = embedFonts
         ? 'data:font/ttf;base64,${base64Encode(malayalamFontBytes)}'
         : 'assets/NotoSansMalayalam-Regular.ttf';
+
     final englishSource = embedFonts
         ? 'data:font/ttf;base64,${base64Encode(englishFontBytes)}'
         : 'assets/NotoSans-Regular.ttf';
-    final pages = hymns
-        .map((hymn) {
-          final hindi = _removeChords(hymn.hindiLyrics?.trim() ?? '');
-          final malayalam = _removeChords(hymn.malayalamLyrics?.trim() ?? '');
-          final english = _removeChords(hymn.englishLyrics?.trim() ?? '');
-          final secondText = malayalam.isNotEmpty ? malayalam : english;
-          final secondClass = malayalam.isNotEmpty ? 'malayalam' : 'english';
-          final title = hymn.title.trim().isNotEmpty
-              ? hymn.title.trim()
-              : hymn.hymnId;
-          return '''
-<section class="hymn-page">
-  <h1>${_escapeHtml(title.toUpperCase())}</h1>
-      <table class="columns"><tr>
-        <td class="language hindi"><h2>Hindi</h2><div class="lyrics">${_escapeHtml(hindi)}</div></td>
-        <td class="divider-cell"><div class="divider"></div></td>
-        <td class="language $secondClass"><h2>${malayalam.isNotEmpty ? 'Malayalam' : 'English'}</h2><div class="lyrics">${_escapeHtml(secondText)}</div></td>
-      </tr></table>
-  <footer>Zion Songs</footer>
-</section>''';
-        })
-        .join('');
 
-    final html =
-        '''<!doctype html><html><head><meta charset="UTF-8"><style>
-@font-face{font-family:Hindi;src:url($hindiSource)}
-@font-face{font-family:Malayalam;src:url($malayalamSource)}
-@font-face{font-family:English;src:url($englishSource)}
-@page{size:A4;margin:18mm 15mm}*{box-sizing:border-box}body{margin:0;color:#111;font-family:English,sans-serif}
-.hymn-page{page-break-after:always}.hymn-page:last-child{page-break-after:auto}h1{text-align:center;font: bold 18pt English;border-bottom:1px solid #222;padding-bottom:3mm}.columns{width:100%;border-collapse:collapse;table-layout:fixed}.language{width:48%;vertical-align:top;white-space:pre-wrap;font-size:11pt;line-height:1.55;overflow-wrap:break-word}.language h2{text-align:center;font: bold 11pt English;border-bottom:1px solid #999;padding-bottom:2mm}.hindi .lyrics{font-family:Hindi,English,sans-serif}.malayalam .lyrics{font-family:Malayalam,English,sans-serif}.english .lyrics{font-family:English,sans-serif}.divider-cell{width:4%;vertical-align:top;text-align:center}.divider{display:inline-block;width:1px;min-height:200mm;background:#999}footer{text-align:center;border-top:1px solid #999;margin-top:10mm;padding-top:2mm;color:#555;font-size:8pt}
-</style></head><body>$pages</body></html>''';
+    final sections = hymns.map((hymn) {
+      final hindi = _removeChords(
+        hymn.hindiLyrics?.trim() ?? '',
+      );
+
+      final malayalam = _removeChords(
+        hymn.malayalamLyrics?.trim() ?? '',
+      );
+
+      final english = _removeChords(
+        hymn.englishLyrics?.trim() ?? '',
+      );
+
+      final title = hymn.title.trim().isNotEmpty
+          ? hymn.title.trim()
+          : hymn.hymnId;
+
+      final hasHindi = hindi.isNotEmpty;
+      final hasMalayalam = malayalam.isNotEmpty;
+      final hasEnglish = english.isNotEmpty;
+
+      final languageCount = [
+        hasHindi,
+        hasMalayalam,
+        hasEnglish,
+      ].where((value) => value).length;
+
+      final titleHtml = '''
+<h1 class="hymn-title">
+  ${_escapeHtml(title.toUpperCase())}
+</h1>
+''';
+
+      // -----------------------------------------------------------
+      // ONE LANGUAGE
+      // -----------------------------------------------------------
+
+      if (languageCount <= 1) {
+        String languageClass;
+        String languageName;
+        String lyrics;
+
+        if (hasHindi) {
+          languageClass = 'hindi';
+          languageName = 'Hindi';
+          lyrics = hindi;
+        } else if (hasMalayalam) {
+          languageClass = 'malayalam';
+          languageName = 'Malayalam';
+          lyrics = malayalam;
+        } else {
+          languageClass = 'english';
+          languageName = 'English';
+          lyrics = english;
+        }
+
+        return '''
+<section class="hymn-section">
+  $titleHtml
+
+  <div class="single-language $languageClass">
+    <h2>$languageName</h2>
+    <div class="lyrics">${_escapeHtml(lyrics)}</div>
+  </div>
+
+  <footer>Zion Songs</footer>
+</section>
+''';
+      }
+
+      // -----------------------------------------------------------
+      // TWO LANGUAGES
+      //
+      // Priority:
+      // Hindi + Malayalam
+      // otherwise Hindi + English
+      // otherwise Malayalam + English
+      // -----------------------------------------------------------
+
+      String leftClass;
+      String leftName;
+      String leftLyrics;
+
+      String rightClass;
+      String rightName;
+      String rightLyrics;
+
+      if (hasHindi && hasMalayalam) {
+        leftClass = 'hindi';
+        leftName = 'Hindi';
+        leftLyrics = hindi;
+
+        rightClass = 'malayalam';
+        rightName = 'Malayalam';
+        rightLyrics = malayalam;
+      } else if (hasHindi && hasEnglish) {
+        leftClass = 'hindi';
+        leftName = 'Hindi';
+        leftLyrics = hindi;
+
+        rightClass = 'english';
+        rightName = 'English';
+        rightLyrics = english;
+      } else {
+        leftClass = 'malayalam';
+        leftName = 'Malayalam';
+        leftLyrics = malayalam;
+
+        rightClass = 'english';
+        rightName = 'English';
+        rightLyrics = english;
+      }
+
+      return '''
+<section class="hymn-section">
+  $titleHtml
+
+  <div class="two-language">
+    <div class="language-column $leftClass">
+      <h2>$leftName</h2>
+      <div class="lyrics">${_escapeHtml(leftLyrics)}</div>
+    </div>
+
+    <div class="language-divider" aria-hidden="true"></div>
+
+    <div class="language-column $rightClass">
+      <h2>$rightName</h2>
+      <div class="lyrics">${_escapeHtml(rightLyrics)}</div>
+    </div>
+  </div>
+
+  <footer>Zion Songs</footer>
+</section>
+''';
+    }).join('\n');
+
+    final html = '''
+<!doctype html>
+<html>
+<head>
+<meta charset="UTF-8">
+
+<style>
+
+@font-face {
+  font-family: Hindi;
+  src: url($hindiSource);
+}
+
+@font-face {
+  font-family: Malayalam;
+  src: url($malayalamSource);
+}
+
+@font-face {
+  font-family: English;
+  src: url($englishSource);
+}
+
+/* -------------------------------------------------------------
+   PAGE
+   ------------------------------------------------------------- */
+
+@page {
+  size: A4;
+  margin: 15mm 15mm 15mm 15mm;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  color: #111;
+  font-family: English, sans-serif;
+  font-size: 11pt;
+  line-height: 1.5;
+}
+
+/* -------------------------------------------------------------
+   HYMN
+   ------------------------------------------------------------- */
+
+.hymn-section {
+  width: 100%;
+  margin: 0 0 12mm 0;
+  padding: 0;
+}
+
+/*
+ * Do NOT force every hymn onto a new page.
+ *
+ * A hymn is allowed to continue naturally over as many pages
+ * as its content requires.
+ */
+.hymn-section {
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+/* -------------------------------------------------------------
+   TITLE
+   ------------------------------------------------------------- */
+
+.hymn-title {
+  width: 100%;
+  margin: 0 0 5mm 0;
+  padding: 0 0 2.5mm 0;
+
+  text-align: center;
+
+  font-family: English, Hindi, Malayalam, sans-serif;
+  font-size: 18pt;
+  font-weight: bold;
+
+  line-height: 1.25;
+
+  border-bottom: 1px solid #222;
+
+  page-break-after: avoid;
+  break-after: avoid;
+}
+
+/* -------------------------------------------------------------
+   LANGUAGE HEADINGS
+   ------------------------------------------------------------- */
+
+h2 {
+  margin: 0 0 3mm 0;
+  padding: 0 0 1.5mm 0;
+
+  text-align: center;
+
+  font-family: English, Hindi, Malayalam, sans-serif;
+  font-size: 11pt;
+  font-weight: bold;
+
+  line-height: 1.25;
+
+  border-bottom: 1px solid #999;
+
+  page-break-after: avoid;
+  break-after: avoid;
+}
+
+/* -------------------------------------------------------------
+   LYRICS
+   ------------------------------------------------------------- */
+
+.lyrics {
+  margin: 0;
+  padding: 0;
+
+  white-space: pre-wrap;
+
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+
+  font-size: 11pt;
+  line-height: 1.55;
+
+  /*
+   * No fixed width.
+   * No fixed height.
+   * No min-height.
+   */
+}
+
+/* -------------------------------------------------------------
+   ONE LANGUAGE
+   ------------------------------------------------------------- */
+
+.single-language {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+.single-language.hindi .lyrics {
+  font-family: Hindi, English, sans-serif;
+}
+
+.single-language.malayalam .lyrics {
+  font-family: Malayalam, English, sans-serif;
+}
+
+.single-language.english .lyrics {
+  font-family: English, sans-serif;
+}
+
+/* -------------------------------------------------------------
+   TWO LANGUAGES
+   ------------------------------------------------------------- */
+
+.two-language {
+  width: 100%;
+
+  display: flex;
+  align-items: stretch;
+
+  margin: 0;
+  padding: 0;
+
+  /*
+   * Do not impose a height.
+   * The content determines the height.
+   */
+  height: auto;
+
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+.language-column {
+  flex: 1 1 0;
+
+  min-width: 0;
+
+  margin: 0;
+  padding: 0 5mm;
+
+  vertical-align: top;
+
+  page-break-inside: auto;
+  break-inside: auto;
+}
+
+.language-column:first-child {
+  padding-left: 0;
+  padding-right: 5mm;
+}
+
+.language-column:last-child {
+  padding-left: 5mm;
+  padding-right: 0;
+}
+
+/* Hindi */
+
+.language-column.hindi .lyrics {
+  font-family: Hindi, English, sans-serif;
+}
+
+/* Malayalam */
+
+.language-column.malayalam .lyrics {
+  font-family: Malayalam, English, sans-serif;
+}
+
+/* English */
+
+.language-column.english .lyrics {
+  font-family: English, sans-serif;
+}
+
+/* -------------------------------------------------------------
+   DIVIDER
+   ------------------------------------------------------------- */
+
+.language-divider {
+  flex: 0 0 1px;
+
+  width: 1px;
+
+  /*
+   * IMPORTANT:
+   * No fixed height.
+   * The divider follows the actual content.
+   */
+  align-self: stretch;
+
+  background: #999;
+
+  margin: 0;
+  padding: 0;
+}
+
+/* -------------------------------------------------------------
+   FOOTER
+   ------------------------------------------------------------- */
+
+footer {
+  width: 100%;
+
+  text-align: center;
+
+  border-top: 1px solid #999;
+
+  margin-top: 8mm;
+  padding-top: 2mm;
+
+  color: #555;
+
+  font-family: English, sans-serif;
+  font-size: 8pt;
+
+  /*
+   * Keep footer with the hymn where possible,
+   * but do not impose a fixed page height.
+   */
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+/* -------------------------------------------------------------
+   PRINT/PAGINATION SAFETY
+   ------------------------------------------------------------- */
+
+h1,
+h2 {
+  orphans: 3;
+  widows: 3;
+}
+
+.lyrics {
+  orphans: 2;
+  widows: 2;
+}
+
+</style>
+</head>
+
+<body>
+$sections
+</body>
+</html>
+''';
 
     return html;
   }
 
-  Future<Uint8List> _loadAssetBytes(String path) async {
+  Future<Uint8List> _loadAssetBytes(
+    String path,
+  ) async {
     final data = await rootBundle.load(path);
 
-    return data.buffer.asUint8List(data.offsetInBytes, data.lengthInBytes);
+    return data.buffer.asUint8List(
+      data.offsetInBytes,
+      data.lengthInBytes,
+    );
   }
 
   String _escapeHtml(String text) {
@@ -284,7 +761,10 @@ class PdfExportService {
           ),
           '',
         )
-        .replaceAll(RegExp(r'[ ]{2,}'), ' ')
+        .replaceAll(
+          RegExp(r'[ ]{2,}'),
+          ' ',
+        )
         .trim();
   }
 }

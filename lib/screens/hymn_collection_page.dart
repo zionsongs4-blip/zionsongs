@@ -144,13 +144,12 @@ class HymnCollectionWorkspace extends StatefulWidget {
 
 class HymnCollectionWorkspaceState extends State<HymnCollectionWorkspace> {
   static CollectionDisplayMode lastDisplayMode =
-      CollectionDisplayMode.displayChorus;
+      CollectionDisplayMode.displayAll;
 
   late List<CollectionTab> _tabs;
   int _activeTabIndex = 0;
 
-  // Default display mode set to Display Chorus
-  CollectionDisplayMode _displayMode = CollectionDisplayMode.displayChorus;
+  CollectionDisplayMode _displayMode = CollectionDisplayMode.displayAll;
 
   final ValueNotifier<double> _lyricsScaleNotifier = ValueNotifier<double>(1.0);
   final Map<String, Future<List<LocalHymn>>> _hymnFutures = {};

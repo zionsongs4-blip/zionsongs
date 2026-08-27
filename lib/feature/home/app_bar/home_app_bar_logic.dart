@@ -27,6 +27,7 @@ class HomeAppBarLogic {
     required this.showScreenSelectorDialog,
     required this.openSelectedHymnsToNewTab,
     required this.addHymnsToExistingTab,
+    required this.openCollectionHymnWorkspace,
   });
 
   final HomeRepository repository;
@@ -37,6 +38,12 @@ class HomeAppBarLogic {
   final Future<void> Function(List<String> hymnIds) openSelectedHymnsToNewTab;
   final Future<void> Function(WorkspaceTab tab, List<String> hymnIds)
   addHymnsToExistingTab;
+  final Future<void> Function(
+    String hymnId,
+    List<String> hymnIds,
+    String? folderName,
+  )
+  openCollectionHymnWorkspace;
 
   List<String> get _selectedIds => selectionController.selectedHymnIds.toList();
 
@@ -139,10 +146,11 @@ class HomeAppBarLogic {
 
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => const FolderDocScreen(
+        builder: (_) => FolderDocScreen(
           collection: 'viewlists',
           docId: 'root',
           docName: 'View Lists',
+          onOpenCollection: openCollectionHymnWorkspace,
         ),
       ),
     );
@@ -162,10 +170,11 @@ class HomeAppBarLogic {
 
     await Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (_) => const FolderDocScreen(
+        builder: (_) => FolderDocScreen(
           collection: 'medleys',
           docId: 'root',
           docName: 'Medleys',
+          onOpenCollection: openCollectionHymnWorkspace,
         ),
       ),
     );
