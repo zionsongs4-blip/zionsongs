@@ -260,28 +260,20 @@ class PdfExportService {
     List<LocalHymn> hymns, {
     bool embedFonts = true,
   }) async {
-    final hindiFontBytes = await _loadAssetBytes(
-      'assets/NotoSansDevanagari-Regular.ttf',
-    );
+    // For Android, use relative/asset URI schemes instead of massive inline base64
+    // blobs that exceed Android Binder limits and cause silent rendering blackouts.
+    final useBase64 = embedFonts && !Platform.isAndroid;
 
-    final malayalamFontBytes = await _loadAssetBytes(
-      'assets/NotoSansMalayalam-Regular.ttf',
-    );
-
-    final englishFontBytes = await _loadAssetBytes(
-      'assets/NotoSans-Regular.ttf',
-    );
-
-    final hindiSource = embedFonts
-        ? 'data:font/ttf;base64,${base64Encode(hindiFontBytes)}'
+    final hindiSource = useBase64
+        ? 'data:font/ttf;base64,${base64Encode(await _loadAssetBytes('assets/NotoSansDevanagari-Regular.ttf'))}'
         : 'assets/NotoSansDevanagari-Regular.ttf';
 
-    final malayalamSource = embedFonts
-        ? 'data:font/ttf;base64,${base64Encode(malayalamFontBytes)}'
+    final malayalamSource = useBase64
+        ? 'data:font/ttf;base64,${base64Encode(await _loadAssetBytes('assets/NotoSansMalayalam-Regular.ttf'))}'
         : 'assets/NotoSansMalayalam-Regular.ttf';
 
-    final englishSource = embedFonts
-        ? 'data:font/ttf;base64,${base64Encode(englishFontBytes)}'
+    final englishSource = useBase64
+        ? 'data:font/ttf;base64,${base64Encode(await _loadAssetBytes('assets/NotoSans-Regular.ttf'))}'
         : 'assets/NotoSans-Regular.ttf';
 
     final sections = hymns.map((hymn) {
@@ -318,7 +310,7 @@ class PdfExportService {
 ''';
 
       // -----------------------------------------------------------
-      // ONE LANGUAGE (Left aligned, no divider)
+      // ONE LANGUAGE
       // -----------------------------------------------------------
 
       if (languageCount <= 1) {
@@ -341,7 +333,7 @@ class PdfExportService {
         }
 
         return '''
-<section class="hymn-section">
+<div class="hymn-section">
   $titleHtml
 
   <div class="single-language $languageClass">
@@ -350,12 +342,12 @@ class PdfExportService {
   </div>
 
   <footer>Zion Songs</footer>
-</section>
+</div>
 ''';
       }
 
       // -----------------------------------------------------------
-      // TWO LANGUAGES (Side-by-side with vertical divider line)
+      // TWO LANGUAGES
       // -----------------------------------------------------------
 
       String leftClass;
@@ -393,25 +385,25 @@ class PdfExportService {
       }
 
       return '''
-<section class="hymn-section">
+<div class="hymn-section">
   $titleHtml
 
-  <table class="two-language-table">
-    <tr>
-      <td class="language-column $leftClass">
-        <h2>$leftName</h2>
-        <div class="lyrics">${_escapeHtml(leftLyrics)}</div>
-      </td>
-      <td class="language-divider" aria-hidden="true"></td>
-      <td class="language-column $rightClass">
-        <h2>$rightName</h2>
-        <div class="lyrics">${_escapeHtml(rightLyrics)}</div>
-      </td>
-    </tr>
-  </table>
+  <div class="two-language">
+    <div class="language-column $leftClass">
+      <h2>$leftName</h2>
+      <div class="lyrics">${_escapeHtml(leftLyrics)}</div>
+    </div>
+
+    <div class="language-divider" aria-hidden="true"></div>
+
+    <div class="language-column $rightClass">
+      <h2>$rightName</h2>
+      <div class="lyrics">${_escapeHtml(rightLyrics)}</div>
+    </div>
+  </div>
 
   <footer>Zion Songs</footer>
-</section>
+</div>
 ''';
     }).join('\n');
 
@@ -425,17 +417,17 @@ class PdfExportService {
 
 @font-face {
   font-family: Hindi;
-  src: url($hindiSource);
+  src: url('$hindiSource');
 }
 
 @font-face {
   font-family: Malayalam;
-  src: url($malayalamSource);
+  src: url('$malayalamSource');
 }
 
 @font-face {
   font-family: English;
-  src: url($englishSource);
+  src: url('$englishSource');
 }
 
 /* -------------------------------------------------------------
@@ -444,7 +436,7 @@ class PdfExportService {
 
 @page {
   size: A4;
-  margin: 15mm;
+  margin: 12mm;
 }
 
 * {
@@ -455,13 +447,14 @@ html,
 body {
   margin: 0;
   padding: 0;
+  background: #ffffff;
 }
 
 body {
   color: #111;
   font-family: English, sans-serif;
-  font-size: 11pt;
-  line-height: 1.5;
+  font-size: 10pt;
+  line-height: 1.4;
 }
 
 /* -------------------------------------------------------------
@@ -481,28 +474,29 @@ body {
 }
 
 /* -------------------------------------------------------------
-   TITLE (Centered, Underlined text)
+   TITLE
    ------------------------------------------------------------- */
 
 .hymn-title {
   width: 100%;
-  margin: 0 0 5mm 0;
-  padding: 0 0 2mm 0;
+  margin: 0 0 4mm 0;
+  padding: 0;
 
   text-align: center;
 
   font-family: English, Hindi, Malayalam, sans-serif;
-  font-size: 16pt;
+  font-size: 15pt;
   font-weight: bold;
-  line-height: 1.25;
+
+  line-height: 1.2;
 
   page-break-after: avoid;
   break-after: avoid;
 }
 
 .hymn-title span {
-  border-bottom: 1px solid #222;
-  padding-bottom: 2mm;
+  border-bottom: 1.5px solid #222;
+  padding-bottom: 1.5mm;
 }
 
 /* -------------------------------------------------------------
@@ -510,16 +504,16 @@ body {
    ------------------------------------------------------------- */
 
 h2 {
-  margin: 0 0 3mm 0;
-  padding: 0 0 1.5mm 0;
+  margin: 0 0 2mm 0;
+  padding: 0 0 1mm 0;
 
   text-align: center;
 
   font-family: English, Hindi, Malayalam, sans-serif;
-  font-size: 11pt;
+  font-size: 10pt;
   font-weight: bold;
 
-  line-height: 1.25;
+  line-height: 1.2;
 
   border-bottom: 1px solid #999;
 
@@ -528,20 +522,19 @@ h2 {
 }
 
 /* -------------------------------------------------------------
-   LYRICS (Left-indexed by default, preventing character breaking)
+   LYRICS
    ------------------------------------------------------------- */
 
 .lyrics {
   margin: 0;
   padding: 0;
 
-  text-align: left;
   white-space: pre-wrap;
-  word-break: normal;
   overflow-wrap: break-word;
+  word-wrap: break-word;
 
-  font-size: 11pt;
-  line-height: 1.6;
+  font-size: 9.5pt;
+  line-height: 1.45;
 }
 
 /* -------------------------------------------------------------
@@ -570,27 +563,40 @@ h2 {
 }
 
 /* -------------------------------------------------------------
-   TWO LANGUAGES (Side-by-side table with center vertical rule)
+   TWO LANGUAGES (Clean Flex Layout)
    ------------------------------------------------------------- */
 
-.two-language-table {
+.two-language {
   width: 100%;
-  border-collapse: collapse;
+  display: flex;
+  align-items: stretch;
   margin: 0;
   padding: 0;
+  height: auto;
 
   page-break-inside: auto;
   break-inside: auto;
 }
 
 .language-column {
-  width: 48.5%;
-  vertical-align: top;
+  flex: 1 1 0;
+  min-width: 0;
   margin: 0;
-  padding: 0;
+  padding: 0 4mm;
+  vertical-align: top;
 
   page-break-inside: auto;
   break-inside: auto;
+}
+
+.language-column:first-child {
+  padding-left: 0;
+  padding-right: 4mm;
+}
+
+.language-column:last-child {
+  padding-left: 4mm;
+  padding-right: 0;
 }
 
 .language-column.hindi .lyrics {
@@ -605,11 +611,17 @@ h2 {
   font-family: English, sans-serif;
 }
 
+/* -------------------------------------------------------------
+   DIVIDER
+   ------------------------------------------------------------- */
+
 .language-divider {
-  width: 3%;
-  border-left: 1px solid #999;
-  padding: 0;
+  flex: 0 0 1px;
+  width: 1px;
+  align-self: stretch;
+  background: #999;
   margin: 0;
+  padding: 0;
 }
 
 /* -------------------------------------------------------------
@@ -619,32 +631,18 @@ h2 {
 footer {
   width: 100%;
   text-align: center;
+
   border-top: 1px solid #999;
 
-  margin-top: 6mm;
-  padding-top: 2mm;
+  margin-top: 5mm;
+  padding-top: 1.5mm;
 
   color: #555;
   font-family: English, sans-serif;
-  font-size: 8pt;
+  font-size: 7.5pt;
 
   page-break-inside: avoid;
   break-inside: avoid;
-}
-
-/* -------------------------------------------------------------
-   PRINT/PAGINATION SAFETY
-   ------------------------------------------------------------- */
-
-h1,
-h2 {
-  orphans: 3;
-  widows: 3;
-}
-
-.lyrics {
-  orphans: 2;
-  widows: 2;
 }
 
 </style>
