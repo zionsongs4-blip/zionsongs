@@ -313,12 +313,12 @@ class PdfExportService {
 
       final titleHtml = '''
 <h1 class="hymn-title">
-  ${_escapeHtml(title.toUpperCase())}
+  <span>${_escapeHtml(title.toUpperCase())}</span>
 </h1>
 ''';
 
       // -----------------------------------------------------------
-      // ONE LANGUAGE
+      // ONE LANGUAGE (Left aligned, no divider)
       // -----------------------------------------------------------
 
       if (languageCount <= 1) {
@@ -355,12 +355,7 @@ class PdfExportService {
       }
 
       // -----------------------------------------------------------
-      // TWO LANGUAGES
-      //
-      // Priority:
-      // Hindi + Malayalam
-      // otherwise Hindi + English
-      // otherwise Malayalam + English
+      // TWO LANGUAGES (Side-by-side with vertical divider line)
       // -----------------------------------------------------------
 
       String leftClass;
@@ -401,19 +396,19 @@ class PdfExportService {
 <section class="hymn-section">
   $titleHtml
 
-  <div class="two-language">
-    <div class="language-column $leftClass">
-      <h2>$leftName</h2>
-      <div class="lyrics">${_escapeHtml(leftLyrics)}</div>
-    </div>
-
-    <div class="language-divider" aria-hidden="true"></div>
-
-    <div class="language-column $rightClass">
-      <h2>$rightName</h2>
-      <div class="lyrics">${_escapeHtml(rightLyrics)}</div>
-    </div>
-  </div>
+  <table class="two-language-table">
+    <tr>
+      <td class="language-column $leftClass">
+        <h2>$leftName</h2>
+        <div class="lyrics">${_escapeHtml(leftLyrics)}</div>
+      </td>
+      <td class="language-divider" aria-hidden="true"></td>
+      <td class="language-column $rightClass">
+        <h2>$rightName</h2>
+        <div class="lyrics">${_escapeHtml(rightLyrics)}</div>
+      </td>
+    </tr>
+  </table>
 
   <footer>Zion Songs</footer>
 </section>
@@ -449,7 +444,7 @@ class PdfExportService {
 
 @page {
   size: A4;
-  margin: 15mm 15mm 15mm 15mm;
+  margin: 15mm;
 }
 
 * {
@@ -475,42 +470,39 @@ body {
 
 .hymn-section {
   width: 100%;
-  margin: 0 0 12mm 0;
+  margin: 0 0 10mm 0;
   padding: 0;
-}
-
-/*
- * Do NOT force every hymn onto a new page.
- *
- * A hymn is allowed to continue naturally over as many pages
- * as its content requires.
- */
-.hymn-section {
   page-break-inside: auto;
   break-inside: auto;
 }
 
+.hymn-section:last-child {
+  margin-bottom: 0;
+}
+
 /* -------------------------------------------------------------
-   TITLE
+   TITLE (Centered, Underlined text)
    ------------------------------------------------------------- */
 
 .hymn-title {
   width: 100%;
   margin: 0 0 5mm 0;
-  padding: 0 0 2.5mm 0;
+  padding: 0 0 2mm 0;
 
   text-align: center;
 
   font-family: English, Hindi, Malayalam, sans-serif;
-  font-size: 18pt;
+  font-size: 16pt;
   font-weight: bold;
-
   line-height: 1.25;
-
-  border-bottom: 1px solid #222;
 
   page-break-after: avoid;
   break-after: avoid;
+}
+
+.hymn-title span {
+  border-bottom: 1px solid #222;
+  padding-bottom: 2mm;
 }
 
 /* -------------------------------------------------------------
@@ -536,26 +528,20 @@ h2 {
 }
 
 /* -------------------------------------------------------------
-   LYRICS
+   LYRICS (Left-indexed by default, preventing character breaking)
    ------------------------------------------------------------- */
 
 .lyrics {
   margin: 0;
   padding: 0;
 
+  text-align: left;
   white-space: pre-wrap;
-
+  word-break: normal;
   overflow-wrap: break-word;
-  word-wrap: break-word;
 
   font-size: 11pt;
-  line-height: 1.55;
-
-  /*
-   * No fixed width.
-   * No fixed height.
-   * No min-height.
-   */
+  line-height: 1.6;
 }
 
 /* -------------------------------------------------------------
@@ -584,90 +570,46 @@ h2 {
 }
 
 /* -------------------------------------------------------------
-   TWO LANGUAGES
+   TWO LANGUAGES (Side-by-side table with center vertical rule)
    ------------------------------------------------------------- */
 
-.two-language {
+.two-language-table {
   width: 100%;
-
-  display: flex;
-  align-items: stretch;
-
+  border-collapse: collapse;
   margin: 0;
   padding: 0;
-
-  /*
-   * Do not impose a height.
-   * The content determines the height.
-   */
-  height: auto;
 
   page-break-inside: auto;
   break-inside: auto;
 }
 
 .language-column {
-  flex: 1 1 0;
-
-  min-width: 0;
-
-  margin: 0;
-  padding: 0 5mm;
-
+  width: 48.5%;
   vertical-align: top;
+  margin: 0;
+  padding: 0;
 
   page-break-inside: auto;
   break-inside: auto;
 }
 
-.language-column:first-child {
-  padding-left: 0;
-  padding-right: 5mm;
-}
-
-.language-column:last-child {
-  padding-left: 5mm;
-  padding-right: 0;
-}
-
-/* Hindi */
-
 .language-column.hindi .lyrics {
   font-family: Hindi, English, sans-serif;
 }
-
-/* Malayalam */
 
 .language-column.malayalam .lyrics {
   font-family: Malayalam, English, sans-serif;
 }
 
-/* English */
-
 .language-column.english .lyrics {
   font-family: English, sans-serif;
 }
 
-/* -------------------------------------------------------------
-   DIVIDER
-   ------------------------------------------------------------- */
-
 .language-divider {
-  flex: 0 0 1px;
-
-  width: 1px;
-
-  /*
-   * IMPORTANT:
-   * No fixed height.
-   * The divider follows the actual content.
-   */
-  align-self: stretch;
-
-  background: #999;
-
-  margin: 0;
+  width: 3%;
+  border-left: 1px solid #999;
   padding: 0;
+  margin: 0;
 }
 
 /* -------------------------------------------------------------
@@ -676,23 +618,16 @@ h2 {
 
 footer {
   width: 100%;
-
   text-align: center;
-
   border-top: 1px solid #999;
 
-  margin-top: 8mm;
+  margin-top: 6mm;
   padding-top: 2mm;
 
   color: #555;
-
   font-family: English, sans-serif;
   font-size: 8pt;
 
-  /*
-   * Keep footer with the hymn where possible,
-   * but do not impose a fixed page height.
-   */
   page-break-inside: avoid;
   break-inside: avoid;
 }
